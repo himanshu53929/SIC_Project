@@ -1,0 +1,175 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<style>
+    .sleep-container {
+        max-width: 950px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .sleep-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 25px;
+        color: #2c3e50;
+    }
+
+    .sleep-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .sleep-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: #ffffff;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    }
+
+    .sleep-table thead {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        color: white;
+    }
+
+    .sleep-table th {
+        padding: 16px;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sleep-table td {
+        padding: 15px;
+        text-align: center;
+        font-size: 0.97rem;
+        color: #333;
+    }
+
+    .sleep-table tbody tr {
+        transition: all 0.2s ease;
+    }
+
+    .sleep-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+    }
+
+    .sleep-table tbody tr:hover {
+        background: #eef2ff;
+        transform: scale(1.01);
+    }
+
+    .quality-badge {
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .quality-good {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .quality-average {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .quality-poor {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .empty-message {
+        text-align: center;
+        margin-top: 30px;
+        color: #777;
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .sleep-title {
+            font-size: 1.6rem;
+        }
+
+        .sleep-table th,
+        .sleep-table td {
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+{% endblock css %}
+
+
+{% block content %}
+
+<div class="sleep-container">
+
+    <h1 class="sleep-title">Sleep Logs</h1>
+
+    {% if sleeps %}
+
+    <div class="sleep-table-wrapper">
+        <table class="sleep-table">
+
+            <thead>
+                <tr>
+                    <th>Hours</th>
+                    <th>Quality</th>
+                    <th>Logged At</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                {% for sleep in sleeps %}
+                <tr>
+
+                    <td>
+                        {{ sleep.hours }}
+                    </td>
+
+                    <td>
+
+                        {% if sleep.quality|lower == "good" %}
+                            <span class="quality-badge quality-good">
+                                {{ sleep.quality }}
+                            </span>
+
+                        {% elif sleep.quality|lower == "average" %}
+                            <span class="quality-badge quality-average">
+                                {{ sleep.quality }}
+                            </span>
+
+                        {% else %}
+                            <span class="quality-badge quality-poor">
+                                {{ sleep.quality }}
+                            </span>
+                        {% endif %}
+
+                    </td>
+
+                    <td>
+                        {{ sleep.logged_at }}
+                    </td>
+
+                </tr>
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+    </div>
+
+    {% else %}
+
+    <p class="empty-message">No sleep logs available.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

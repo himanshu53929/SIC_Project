@@ -1,0 +1,168 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<style>
+    .weight-container {
+        max-width: 900px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .weight-title {
+        text-align: center;
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 25px;
+        color: #1e293b;
+    }
+
+    .weight-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    }
+
+    .weight-table-wrapper {
+        overflow-x: auto;
+    }
+
+    .weight-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .weight-table thead {
+        background: linear-gradient(135deg, #0f172a, #334155);
+        color: white;
+    }
+
+    .weight-table th {
+        padding: 18px;
+        font-size: 1rem;
+        letter-spacing: 0.5px;
+    }
+
+    .weight-table td {
+        padding: 16px;
+        text-align: center;
+        font-size: 0.96rem;
+        color: #334155;
+    }
+
+    .weight-table tbody tr {
+        transition: all 0.25s ease;
+    }
+
+    .weight-table tbody tr:nth-child(even) {
+        background: #f8fafc;
+    }
+
+    .weight-table tbody tr:hover {
+        background: #e0f2fe;
+        transform: scale(1.01);
+    }
+
+    .weight-value {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        background: #dbeafe;
+        color: #1d4ed8;
+        border-radius: 999px;
+        font-weight: 700;
+        min-width: 90px;
+    }
+
+    .logged-time {
+        color: #64748b;
+        font-size: 0.92rem;
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 35px;
+        color: #64748b;
+        font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+        .weight-title {
+            font-size: 1.6rem;
+        }
+
+        .weight-table th,
+        .weight-table td {
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        .weight-value {
+            min-width: auto;
+            padding: 6px 12px;
+        }
+    }
+</style>
+{% endblock css %}
+
+
+{% block content %}
+
+<div class="weight-container">
+
+    <h1 class="weight-title">Weight Logs</h1>
+
+    {% if weights %}
+
+    <div class="weight-card">
+        <div class="weight-table-wrapper">
+
+            <table class="weight-table">
+
+                <thead>
+                    <tr>
+                        <th>Weight (kg)</th>
+                        <th>Logged At</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for weight in weights %}
+                    <tr>
+
+                        <td>
+                            <span class="weight-value">
+                                {{ weight.weight_kg }} kg
+                            </span>
+                        </td>
+
+                        <td>
+                            <span class="logged-time">
+                                {{ weight.logged_at }}
+                            </span>
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+
+    {% else %}
+
+    <p class="empty-message">
+        No weight logs available.
+    </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

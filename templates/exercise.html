@@ -1,0 +1,95 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<style>
+    .exercise-container {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    .exercise-title {
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 2rem;
+        font-weight: bold;
+    }
+
+    .exercise-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .exercise-table thead {
+        background: #2c3e50;
+        color: white;
+    }
+
+    .exercise-table th,
+    .exercise-table td {
+        padding: 15px;
+        text-align: center;
+    }
+
+    .exercise-table tbody tr:nth-child(even) {
+        background: #f4f6f8;
+    }
+
+    .exercise-table tbody tr:hover {
+        background: #e8f0fe;
+        transition: 0.2s ease;
+    }
+
+    .empty-message {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 1.1rem;
+        color: #777;
+    }
+</style>
+{% endblock css %}
+
+
+{% block content %}
+
+<div class="exercise-container">
+
+    <h1 class="exercise-title">Exercise Logs</h1>
+
+    {% if exercises %}
+
+    <table class="exercise-table">
+        <thead>
+            <tr>
+                <th>Exercise</th>
+                <th>Duration (min)</th>
+                <th>MET</th>
+                <th>Calories Burned</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for exercise in exercises %}
+            <tr>
+                <td>{{ exercise.exercise_name }}</td>
+                <td>{{ exercise.duration_min }}</td>
+                <td>{{ exercise.MET }}</td>
+                <td>{{ exercise.calories_burned }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% else %}
+
+    <p class="empty-message">No exercise logs found.</p>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}
