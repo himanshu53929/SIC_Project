@@ -225,6 +225,7 @@
                 type="text"
                 class="form-control"
                 name="exercise_name"
+                id="exercise_name"
                 placeholder="Search exercise..."
                 autocomplete="off"
                 required
@@ -421,7 +422,61 @@
 
   // Searching Suggestion Logic
 
-  const foodInput = document.getElementById("")
+  const exerciseInput = document.getElementById("exercise_name");
+  const suggestionBox = document.getElementById("exerciseSuggestions");
+
+  exerciseInput.addEventListener("input", async () => {
+    const query = exerciseInput.value.trim();
+
+    if (query.length < 1) {
+      suggestionBox.style.display = "none";
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/users/1/exercises/search?q=${encodeURIComponent(query)}`,
+      );
+
+      const exercises = await response.json();
+
+      suggestionBox.innerHTML = "";
+
+      if (exercises.length === 0) {
+        suggestionBox.style.display = "none";
+        return;
+      }
+
+      exercises.forEach((exercise) => {
+        const item = document.createElement("div");
+        item.classList.add("suggestion-item");
+
+        item.textContent = exercise.exercise_name;
+
+        item.addEventListener("click", () => {
+          exerciseInput.value = exercise.exercise_name;
+
+          suggestionBox.style.display = "none";
+        });
+
+        suggestionBox.appendChild(item);
+      });
+
+      suggestionBox.style.display = "block";
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+// Logic to hide the suggestion box if user clicks in the background
+  document.addEventListener("click", (event) => {
+    if (
+      !exerciseInput.contains(event.target) &&
+      !suggestionBox.contains(event.target)
+    ) {
+      suggestionBox.style.display = "none";
+    }
+  });
 </script>
 
 {% endblock scripts %}

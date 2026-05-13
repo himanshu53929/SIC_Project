@@ -92,3 +92,18 @@ async def delete_exercise(user_id: int, exercise_id: int, db: Annotated[AsyncSes
 
     await db.delete(exercise)
     await db.commit()
+
+# Search For exercises
+@router.get("/exercises/search")
+async def search_exercise(q: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    # Search for the exercise types in database and match the pattern with q or query
+    results = await db.execute(
+        select(models.Stored_Exercise)
+        .where(models.Stored_Exercise.exercise_name.ilike(f"%{q}%"))
+        .limit(10)
+    )
+
+    exercises = results.scalars().all()
+
+    return [{"id": exercise.id, "exercise_name": exercise.exercise_name} for exercise in exercises]
+
