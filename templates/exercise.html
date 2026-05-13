@@ -72,6 +72,12 @@
     color: #777;
   }
 
+  .delete-btn {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+  }
+
   .modal-content {
     border: none;
     border-radius: 16px;
@@ -112,6 +118,29 @@
       width: 100%;
     }
   }
+
+  .suggestions-box {
+    position: absolute;
+    width: 100%;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    margin-top: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 2000;
+    display: none;
+  }
+
+  .suggestion-item {
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .suggestion-item:hover {
+    background: #f3f4f6;
+  }
 </style>
 {% endblock css %} {% block content %}
 
@@ -139,81 +168,77 @@
           <th>Duration (min)</th>
           <th>MET</th>
           <th>Calories Burned</th>
+          <th>Action</th>
         </tr>
       </thead>
 
       <tbody>
         {% for exercise in exercises %}
-
         <tr>
           <td>{{ exercise.exercise_name }}</td>
           <td>{{ exercise.duration_min }}</td>
           <td>{{ exercise.MET }}</td>
           <td>{{ exercise.calories_burned }}</td>
-        </tr>
 
+          <td>
+            <button
+              class="btn btn-sm btn-danger delete-exercise-btn delete-btn"
+              data-id="{{ exercise.id }}"
+              data-name="{{ exercise.exercise_name }}"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
   {% else %}
-
   <p class="empty-message">No exercise logs found.</p>
-
   {% endif %}
 </div>
 
 <!-- Add Exercise Modal -->
-<div
-  class="modal fade"
-  id="addExerciseModal"
-  tabindex="-1"
-  aria-labelledby="addExerciseModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="addExerciseModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addExerciseModalLabel">Log Exercise</h5>
-
+        <h5 class="modal-title">Log Exercise</h5>
         <button
           type="button"
           class="btn-close"
           data-bs-dismiss="modal"
-          aria-label="Close"
         ></button>
       </div>
 
       <form id="addExerciseForm">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="exercise_name" class="form-label">
-              Exercise Name
-            </label>
+            <label class="form-label">Exercise Name</label>
 
-            <input
-              type="text"
-              class="form-control"
-              id="exercise_name"
-              name="exercise_name"
-              placeholder="Example: Running"
-              required
-            />
+            <div>
+              <input
+                type="text"
+                class="form-control"
+                name="exercise_name"
+                placeholder="Search exercise..."
+                autocomplete="off"
+                required
+              />
+              <div id="exerciseSuggestions" class="suggestions-box"></div>
+            </div>
           </div>
 
           <div class="mb-3">
-            <label for="duration_min" class="form-label">
-              Duration (min)
-            </label>
-
+            <label class="form-label">Duration (min)</label>
             <input
               type="number"
               class="form-control"
-              id="duration_min"
               name="duration_min"
-              placeholder="Example: 30"
-              min="1"
               step="0.1"
               required
             />
@@ -222,14 +247,13 @@
 
         <div class="modal-footer">
           <button
-            type="button"
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal"
+            type="button"
           >
             Cancel
           </button>
-
-          <button type="submit" class="btn btn-primary">Save Exercise</button>
+          <button class="btn btn-primary" type="submit">Save</button>
         </div>
       </form>
     </div>
@@ -237,68 +261,59 @@
 </div>
 
 <!-- Success Modal -->
-<div
-  class="modal fade"
-  id="successModal"
-  tabindex="-1"
-  aria-labelledby="successModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="successModal">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="successModalLabel">Success</h5>
-
+        <h5 class="modal-title">Success</h5>
         <button
-          type="button"
           class="btn-close btn-close-white"
           data-bs-dismiss="modal"
-          aria-label="Close"
         ></button>
       </div>
-
       <div class="modal-body">
-        <p id="successMessage" class="fs-5 mb-0"></p>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
+        <p id="successMessage" class="mb-0 fs-5"></p>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Error Modal -->
-<div
-  class="modal fade"
-  id="errorModal"
-  tabindex="-1"
-  aria-labelledby="errorModalLabel"
-  aria-hidden="true"
->
+<div class="modal fade" id="errorModal">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="errorModalLabel">Error</h5>
-
+        <h5 class="modal-title">Error</h5>
         <button
-          type="button"
           class="btn-close btn-close-white"
           data-bs-dismiss="modal"
-          aria-label="Close"
         ></button>
+      </div>
+      <div class="modal-body">
+        <p id="errorMessage" class="mb-0 fs-5"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
-        <p id="errorMessage" class="fs-5 mb-0"></p>
+        <p id="deleteMessage" class="fs-5 mb-0"></p>
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
         </button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
       </div>
     </div>
   </div>
@@ -309,66 +324,104 @@
 <script type="module">
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
 
+  // ADD EXERCISE
   const addExerciseForm = document.getElementById("addExerciseForm");
 
-  addExerciseForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  addExerciseForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-    const formData = new FormData(addExerciseForm);
-
-    const exerciseData = Object.fromEntries(formData.entries());
-
-    exerciseData.duration_min = parseFloat(exerciseData.duration_min);
+    const data = Object.fromEntries(new FormData(addExerciseForm).entries());
+    data.duration_min = parseFloat(data.duration_min);
 
     try {
-      const response = await fetch("/api/users/1/exercise_logs", {
+      const res = await fetch("/api/users/1/exercise_logs", {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify(exerciseData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const data = await response.json();
+      if (res.ok) {
+        const result = await res.json();
 
         document.getElementById("successMessage").textContent =
-          `"${data.exercise_name}" logged successfully!`;
+          `${result.exercise_name} added successfully`;
 
         hideModal("addExerciseModal");
-
         showModal("successModal");
 
         addExerciseForm.reset();
 
-        document.getElementById("successModal").addEventListener(
-          "hidden.bs.modal",
-          () => {
-            window.location.reload();
-          },
-          { once: true },
-        );
+        setTimeout(() => window.location.reload(), 800);
       } else {
-        const error = await response.json();
-
+        const err = await res.json();
         document.getElementById("errorMessage").textContent =
-          getErrorMessage(error);
+          getErrorMessage(err);
 
         hideModal("addExerciseModal");
-
         showModal("errorModal");
       }
-    } catch (error) {
-      document.getElementById("errorMessage").textContent =
-        "Network error. Please try again.";
-
+    } catch {
+      document.getElementById("errorMessage").textContent = "Network error";
       hideModal("addExerciseModal");
-
       showModal("errorModal");
     }
   });
+
+  // DELETE LOGIC
+  let selectedId = null;
+
+  const deleteMessage = document.getElementById("deleteMessage");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+  document.querySelectorAll(".delete-exercise-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedId = btn.dataset.id;
+      deleteMessage.textContent = `Are you sure you want to delete "${btn.dataset.name}"?`;
+    });
+  });
+
+  confirmDeleteBtn.addEventListener("click", async () => {
+    if (!selectedId) return;
+
+    try {
+      const res = await fetch(`/api/users/1/exercise_logs/${selectedId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+
+        document.getElementById("successMessage").textContent =
+          "Exercise Log Deleted Sucessfully";
+
+        hideModal("deleteModal");
+        showModal("successModal");
+
+        document
+          .getElementById("successModal")
+          .addEventListener("hidden.bs.modal", () => window.location.reload(), {
+            once: true,
+          });
+      } else {
+        const err = await res.json();
+        document.getElementById("errorModal").textContent =
+          getErrorMessage(err);
+
+        hideModal("deleteModal");
+        showModal("errorModal");
+      }
+    } catch {
+      document.getElementById("errorModal").textContent =
+        "Some Networking Eroor";
+
+      hideModal("deleteModal");
+      showModal("errorModal");
+    }
+  });
+
+  // Searching Suggestion Logic
+
+  const foodInput = document.getElementById("")
 </script>
 
 {% endblock scripts %}
