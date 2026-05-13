@@ -159,6 +159,29 @@
       padding: 12px 8px;
     }
   }
+
+  .suggestions-box {
+    position: absolute;
+    width: 100%;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    margin-top: 4px;
+    max-height: 220px;
+    overflow-y: auto;
+    z-index: 2000;
+    display: none;
+  }
+
+  .suggestion-item {
+    padding: 12px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .suggestion-item:hover {
+    background: #f3f4f6;
+  }
 </style>
 {% endblock css %} {% block content %}
 
@@ -205,6 +228,18 @@
           <td>{{ food.carbohydrate }}</td>
 
           <td>{{ food.fat }}</td>
+
+          <td>
+            <button
+              class="btn btn-sm btn-danger delete-food-btn"
+              data-id="{{ food.id }}"
+              data-name="{{ food.food_name }}"
+              data-bs-toggle="modal"
+              data-bs-target="#deleteModal"
+            >
+              Delete
+            </button>
+          </td>
         </tr>
         {% endfor %}
       </tbody>
@@ -245,29 +280,21 @@
       <form id="addFoodForm">
         <div class="modal-body">
           <div class="mb-3">
-            <label for="user_id" class="form-label"> User ID </label>
-
-            <input
-              type="number"
-              class="form-control"
-              id="user_id"
-              name="user_id"
-              placeholder="Example: 1"
-              required
-            />
-          </div>
-
-          <div class="mb-3">
             <label for="food_name" class="form-label"> Food Name </label>
 
-            <input
-              type="text"
-              class="form-control"
-              id="food_name"
-              name="food_name"
-              placeholder="Example: Rice"
-              required
-            />
+            <div class="position-relative">
+              <input
+                type="text"
+                class="form-control"
+                id="food_name"
+                name="food_name"
+                placeholder="Search food..."
+                autocomplete="off"
+                required
+              />
+
+              <div id="foodSuggestions" class="suggestions-box"></div>
+            </div>
           </div>
 
           <div class="mb-3">
@@ -370,6 +397,34 @@
   </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+
+      <div class="modal-body">
+        <p id="deleteMessage" class="mb-0 fs-5"></p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
+
+        <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock content %} {% block scripts %}
 
 <script type="module">
@@ -432,6 +487,121 @@
 
       hideModal("addFoodModal");
 
+      showModal("errorModal");
+    }
+  });
+
+  const foodInput = document.getElementById("food_name");
+
+  const suggestionsBox = document.getElementById("foodSuggestions");
+
+  foodInput.addEventListener("input", async () => {
+    const query = foodInput.value.trim();
+
+    if (query.length < 1) {
+      suggestionsBox.style.display = "none";
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/users/1/foods/search?q=${encodeURIComponent(query)}`,
+      );
+
+      const foods = await response.json();
+
+      suggestionsBox.innerHTML = "";
+
+      if (foods.length === 0) {
+        suggestionsBox.style.display = "none";
+        return;
+      }
+
+      foods.forEach((food) => {
+        const item = document.createElement("div");
+
+        item.classList.add("suggestion-item");
+
+        item.textContent = food.food_name;
+
+        item.addEventListener("click", () => {
+          foodInput.value = food.food_name;
+
+          suggestionsBox.style.display = "none";
+        });
+
+        suggestionsBox.appendChild(item);
+      });
+
+      suggestionsBox.style.display = "block";
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (
+      !foodInput.contains(event.target) &&
+      !suggestionsBox.contains(event.target)
+    ) {
+      suggestionsBox.style.display = "none";
+    }
+  });
+
+  // Delete Logic
+  let selectedFoodId = null;
+
+  const deleteMessage = document.getElementById("deleteMessage");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+  // When delete button is clicked
+  document.querySelectorAll(".delete-food-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedFoodId = btn.dataset.id;
+
+      const name = btn.dataset.name;
+
+      deleteMessage.textContent = `Are you sure you want to delete "${name}"?`;
+    });
+  });
+
+  // Confirm delete
+  confirmDeleteBtn.addEventListener("click", async () => {
+    if (!selectedFoodId) return;
+
+    try {
+      const response = await fetch(`/api/users/1/food_logs/${selectedFoodId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        const data = await response.json().catch(() => null);
+
+        document.getElementById("successMessage").textContent =
+          "Food deleted successfully!";
+
+        hideModal("deleteModal");
+        showModal("successModal");
+
+        document
+          .getElementById("successModal")
+          .addEventListener("hidden.bs.modal", () => window.location.reload(), {
+            once: true,
+          });
+      } else {
+        const error = await response.json();
+
+        document.getElementById("errorMessage").textContent =
+          getErrorMessage(error);
+
+        hideModal("deleteModal");
+        showModal("errorModal");
+      }
+    } catch (err) {
+      document.getElementById("errorMessage").textContent =
+        "Network error. Please try again.";
+
+      hideModal("deleteModal");
       showModal("errorModal");
     }
   });

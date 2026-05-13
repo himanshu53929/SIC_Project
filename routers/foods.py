@@ -84,3 +84,15 @@ async def delete_food(user_id: int, food_id: int, db: Annotated[AsyncSession, De
     await db.delete(food)
     await db.commit()
 
+
+@router.get("/foods/search")
+async def search_food(q: str, db: Annotated[AsyncSession, Depends(get_db)]):
+    results = await db.execute(
+        select(models.Stored_Food)
+        .where(models.Stored_Food.food_name.ilike(f"%{q}%"))
+        .limit(10)
+    )
+
+    foods = results.scalars().all()
+
+    return [{"id": food.id, "food_name": food.food_name} for food in foods]
