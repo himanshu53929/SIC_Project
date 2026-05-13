@@ -1,54 +1,52 @@
-
-
 .sidebar {
-    width: 200px;
-    height: 100vh;
-    background: #333;
-    color: white;
-    position: fixed;
-    left: 0;
-    top: 0;
-    transition: 0.3s;
+  width: 200px;
+  height: 100vh;
+  background: #333;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: 0.3s;
 }
 
-.sidebar-header{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px;
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px;
 }
 
 .toggle-btn {
-    position: fixed;   /* IMPORTANT */
-    top: 10px;
-    left: 210px; /* sits just outside sidebar */
-    z-index: 1000;
-    color: red;
-    transition: 0.3s;
+  position: fixed; /* IMPORTANT */
+  top: 10px;
+  left: 210px; /* sits just outside sidebar */
+  z-index: 1000;
+  color: red;
+  transition: 0.3s;
 }
 
 .sidebar a {
-    display: block;
-    color: white;
-    padding: 20px;
-    font-size: 20px;
-    text-decoration: none;
+  display: block;
+  color: white;
+  padding: 20px;
+  font-size: 20px;
+  text-decoration: none;
 }
 
 .sidebar a:hover {
-    background-color: grey;
+  background-color: grey;
 }
 
 .sidebar.hidden {
-    left: -200px;
+  left: -200px;
 }
 
 .main {
-    margin-left: 200px;
-    padding: 20px;
-    transition: 0.3s;
+  margin-left: 230px;
+  padding: 20px;
+  transition: 0.3s;
 }
 
 .main.shifted {
-    margin-left: 0;
+  margin-left: 30px;
 }
