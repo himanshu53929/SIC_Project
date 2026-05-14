@@ -1,4 +1,5 @@
 from datetime import datetime
+from datetime import date as d
 from pydantic import BaseModel, ConfigDict, Field
 
 class UserBase(BaseModel):
@@ -17,10 +18,11 @@ class UserResponse(UserBase):
 
     id: int
 
-
+# Food Schemas
 class FoodBase(BaseModel):
     food_name: str = Field(min_length=1, max_length=50)
     quantity_g: float
+    date: d
     
 
 class FoodCreate(FoodBase):
@@ -45,6 +47,7 @@ class FoodUpdate(BaseModel):
 class ExerciseBase(BaseModel):
     exercise_name: str = Field(min_length=1, max_length=50)
     duration_min: float
+    date: d
     
 
 class ExerciseCreate(ExerciseBase):
@@ -68,6 +71,7 @@ class ExerciseUpdate(BaseModel):
 class SleepBase(BaseModel):
     quality: str = Field(min_length=1, max_length=50)
     hours: float
+    date: d
     
 
 class SleepCreate(SleepBase):
@@ -84,6 +88,7 @@ class SleepResponse(SleepBase):
 # Weight Schemas
 class WeightBase(BaseModel):
     weight_kg: float = Field(gt=5, lt=200)
+    date: d
     
 
 class WeightCreate(WeightBase):
@@ -98,3 +103,29 @@ class WeightResponse(WeightBase):
 
 class WeightUpdate(BaseModel):
     weight_kg: float | None = Field(default=None, gt=5, lt=200)
+
+
+
+# Custom Food Schemas
+
+class CustomFoodBase(BaseModel):
+    food_name: str = Field(min_length=1, max_length=50)
+    calories: float = Field(gt=0)
+    carbohydrate: float = Field(ge=0)
+    protein: float = Field(ge=0)
+    fat: float = Field(ge=0)
+    
+
+class CustomFoodCreate(CustomFoodBase):
+    pass
+
+class CustomFoodResponse(CustomFoodBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+
+# This needs to be updated later
+class CustomFoodUpdate(BaseModel):
+    food_name: str | None = Field(default=None, min_length=1, max_length=50)
+    quantity_g: float | None = Field(default=None)

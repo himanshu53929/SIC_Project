@@ -40,6 +40,7 @@ async def add_exercise(user_id: int, exercise: ExerciseCreate, db: Annotated[Asy
     
     new_exercise = models.Exercise(
         exercise_name = exercise.exercise_name,
+        date = exercise.date,
         duration_min = exercise.duration_min,
         user_id = user_id,
         MET = stored_exercise.MET,

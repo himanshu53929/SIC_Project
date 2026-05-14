@@ -1,8 +1,8 @@
 from __future__ import annotations # To have the forward refrencing
 
-from datetime import UTC, datetime # For date
+from datetime import UTC, datetime, date as d # For date
 
-from sqlalchemy import DateTime, ForeignKey, Integer, String, TIMESTAMP, func, Text, Float # Some column types and relation keys
+from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, TIMESTAMP, func, Text, Float # Some column types and relation keys
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 # Our class from base
@@ -38,9 +38,7 @@ class Food(Base):
         nullable=False,
         index=True
     )
-    date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC))
+    date: Mapped[d] = mapped_column(Date, nullable=False)
     food_name: Mapped[str] = mapped_column(String, nullable=False)
     quantity_g: Mapped[float] = mapped_column(Float, default=100)
     calories: Mapped[float] = mapped_column(Float, nullable=False)
@@ -64,9 +62,7 @@ class Exercise(Base):
         nullable=False,
         index=True
     )
-    date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC))
+    date: Mapped[d] = mapped_column(Date, nullable=False)
     exercise_name: Mapped[str] = mapped_column(String, nullable=False)
     duration_min: Mapped[float] = mapped_column(Float, nullable=False)
     MET: Mapped[float] = mapped_column(Float, nullable=False)  
@@ -87,9 +83,7 @@ class Sleep(Base):
         nullable=False,
         index=True
     )
-    date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC))
+    date: Mapped[d] = mapped_column(Date, nullable=False)
     quality: Mapped[str] = mapped_column(String, default="good")
     hours: Mapped[float] = mapped_column(Float, nullable=False)
     logged_at: Mapped[datetime] = mapped_column(
@@ -108,9 +102,7 @@ class Weight(Base):
         nullable=False,
         index=True
     )
-    date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        default=lambda: datetime.now(UTC))
+    date: Mapped[d] = mapped_column(Date, nullable=False)
     weight_kg: Mapped[float] = mapped_column(Float, nullable=False)
     logged_at: Mapped[datetime] = mapped_column(
             TIMESTAMP,
@@ -130,8 +122,8 @@ class Custom_Food(Base):
     )
     food_name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     calories: Mapped[float] = mapped_column(Float, nullable=False)
-    protien: Mapped[float] = mapped_column(Float, nullable=False)
-    carbohydrates: Mapped[float] = mapped_column(Float, nullable=False)
+    protein: Mapped[float] = mapped_column(Float, nullable=False)
+    carbohydrate: Mapped[float] = mapped_column(Float, nullable=False)
     fat: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
             TIMESTAMP,

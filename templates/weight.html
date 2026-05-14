@@ -1,6 +1,4 @@
-{% extends "layout.html" %}
-
-{% block css %}
+{% extends "layout.html" %} {% block css %}
 <style>
   /* (YOUR EXISTING CSS - NO CHANGES) */
   .weight-container {
@@ -140,9 +138,7 @@
     padding: 12px;
   }
 </style>
-{% endblock css %}
-
-{% block content %}
+{% endblock css %} {% block content %}
 
 <div class="weight-container">
   <div class="weight-header">
@@ -195,7 +191,6 @@
           </tr>
           {% endfor %}
         </tbody>
-
       </table>
     </div>
   </div>
@@ -216,19 +211,36 @@
 
       <form id="addWeightForm">
         <div class="modal-body">
-          <input
-            type="number"
-            class="form-control"
-            id="weight_kg"
-            name="weight_kg"
-            placeholder="Example: 72.5"
-            step="0.1"
-            required
-          />
+          <div class="mb-3">
+            <label for="food_date" class="form-label"> Weight(kg) </label>
+            <input
+              type="number"
+              class="form-control"
+              id="weight_kg"
+              name="weight_kg"
+              placeholder="Example: 72.5"
+              step="0.1"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="food_date" class="form-label"> Date </label>
+
+            <input
+              type="date"
+              class="form-control"
+              id="food_date"
+              name="date"
+              required
+            />
+          </div>
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancel
+          </button>
           <button class="btn btn-primary">Save</button>
         </div>
       </form>
@@ -278,7 +290,6 @@
 <div class="modal fade" id="deleteModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-
       <div class="modal-header bg-warning">
         <h5 class="modal-title">Confirm Delete</h5>
       </div>
@@ -288,18 +299,21 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
         <button id="confirmDeleteBtn" class="btn btn-danger">Delete</button>
       </div>
-
     </div>
   </div>
 </div>
 
-{% endblock content %}
-
-{% block scripts %}
+{% endblock content %} {% block scripts %}
 <script type="module">
+  const foodDateInput = document.getElementById("food_date");
+
+  foodDateInput.value = new Date().toISOString().split("T")[0];
+
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
 
   /* ADD WEIGHT */
@@ -329,11 +343,13 @@
 
         document
           .getElementById("successModal")
-          .addEventListener("hidden.bs.modal", () => location.reload(), { once: true });
-
+          .addEventListener("hidden.bs.modal", () => location.reload(), {
+            once: true,
+          });
       } else {
         const err = await res.json();
-        document.getElementById("errorMessage").textContent = getErrorMessage(err);
+        document.getElementById("errorMessage").textContent =
+          getErrorMessage(err);
 
         hideModal("addWeightModal");
         showModal("errorModal");
@@ -356,7 +372,8 @@
   document.querySelectorAll(".delete-weight-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedId = btn.dataset.id;
-      deleteMessage.textContent = "Are you sure you want to delete this weight log?";
+      deleteMessage.textContent =
+        "Are you sure you want to delete this weight log?";
     });
   });
 
@@ -370,16 +387,19 @@
 
       if (res.ok) {
         hideModal("deleteModal");
-        document.getElementById("successMessage").textContent = "Deleted successfully!";
+        document.getElementById("successMessage").textContent =
+          "Deleted successfully!";
         showModal("successModal");
 
         document
           .getElementById("successModal")
-          .addEventListener("hidden.bs.modal", () => location.reload(), { once: true });
-
+          .addEventListener("hidden.bs.modal", () => location.reload(), {
+            once: true,
+          });
       } else {
         const err = await res.json();
-        document.getElementById("errorMessage").textContent = getErrorMessage(err);
+        document.getElementById("errorMessage").textContent =
+          getErrorMessage(err);
 
         hideModal("deleteModal");
         showModal("errorModal");

@@ -24,7 +24,8 @@ from routers import (foods,
                      load_data, 
                      exercises,
                      sleeps,
-                     weights
+                     weights,
+                     custom_food
                      )
 
 # Creating Database Tables
@@ -54,6 +55,7 @@ app.include_router(foods.router, prefix="/api/users/{user_id}", tags=["Food APIs
 app.include_router(exercises.router, prefix="/api/users/{user_id}", tags=["Exercise APIs"])
 app.include_router(sleeps.router, prefix="/api/users/{user_id}", tags=["Sleep APIs"])
 app.include_router(weights.router, prefix="/api/users/{user_id}", tags=["Weight APIs"])
+app.include_router(custom_food.router, prefix="/api/users/{user_id}", tags=["Custom Food APIs"])
 app.include_router(load_data.router, prefix="/api/data", tags=["Load Data APIs"])
 
 
@@ -115,11 +117,6 @@ async def exercise(request: Request, user_id: int, db: Annotated[AsyncSession, D
     
     results = await db.execute(select(models.Exercise).where(models.Exercise.user_id == user_id))
     exercises = results.scalars().all()
-    if not exercises:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No Exercises logs yet"
-        )
 
     return templates.TemplateResponse(
         request,
@@ -144,11 +141,6 @@ async def sleep(request: Request, user_id: int, db: Annotated[AsyncSession, Depe
     
     results = await db.execute(select(models.Sleep).where(models.Sleep.user_id == user_id))
     sleeps = results.scalars().all()
-    if not sleeps:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No sleeps logs yet"
-        )
 
     return templates.TemplateResponse(
         request,
@@ -172,11 +164,6 @@ async def food_templates(request: Request, user_id: int, db: Annotated[AsyncSess
     
     results = await db.execute(select(models.Food).where(models.Food.user_id == user_id))
     foods = results.scalars().all()
-    if not foods:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No food logs yet"
-        )
 
     return templates.TemplateResponse(
         request,
@@ -211,11 +198,7 @@ async def weight(request: Request, user_id: int, db: Annotated[AsyncSession, Dep
     
     results = await db.execute(select(models.Weight).where(models.Weight.user_id == user_id))
     weights = results.scalars().all()
-    if not weights:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="No weights logs yet"
-        )
+
 
     return templates.TemplateResponse(
         request,

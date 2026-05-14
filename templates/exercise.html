@@ -244,6 +244,17 @@
               required
             />
           </div>
+          <div class="mb-3">
+            <label for="food_date" class="form-label"> Date </label>
+
+            <input
+              type="date"
+              class="form-control"
+              id="food_date"
+              name="date"
+              required
+            />
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -323,6 +334,10 @@
 {% endblock content %} {% block scripts %}
 
 <script type="module">
+  const foodDateInput = document.getElementById("food_date");
+
+  foodDateInput.value = new Date().toISOString().split("T")[0];
+
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
 
   // ADD EXERCISE
@@ -468,7 +483,7 @@
     }
   });
 
-// Logic to hide the suggestion box if user clicks in the background
+  // Logic to hide the suggestion box if user clicks in the background
   document.addEventListener("click", (event) => {
     if (
       !exerciseInput.contains(event.target) &&

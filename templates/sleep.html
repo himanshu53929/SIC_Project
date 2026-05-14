@@ -1,6 +1,4 @@
-{% extends "layout.html" %}
-
-{% block css %}
+{% extends "layout.html" %} {% block css %}
 <style>
   .sleep-container {
     max-width: 950px;
@@ -80,9 +78,18 @@
     font-weight: 600;
   }
 
-  .quality-good { background: #dcfce7; color: #166534; }
-  .quality-average { background: #fef3c7; color: #92400e; }
-  .quality-poor { background: #fee2e2; color: #991b1b; }
+  .quality-good {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .quality-average {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .quality-poor {
+    background: #fee2e2;
+    color: #991b1b;
+  }
 
   .delete-btn {
     padding: 6px 12px;
@@ -117,12 +124,9 @@
     font-size: 1.1rem;
   }
 </style>
-{% endblock css %}
-
-{% block content %}
+{% endblock css %} {% block content %}
 
 <div class="sleep-container">
-
   <div class="sleep-header">
     <h1 class="sleep-title">Sleep Logs</h1>
 
@@ -155,11 +159,13 @@
 
           <td>
             {% if sleep.quality|lower == "good" %}
-              <span class="quality-badge quality-good">{{ sleep.quality }}</span>
+            <span class="quality-badge quality-good">{{ sleep.quality }}</span>
             {% elif sleep.quality|lower == "average" %}
-              <span class="quality-badge quality-average">{{ sleep.quality }}</span>
+            <span class="quality-badge quality-average"
+              >{{ sleep.quality }}</span
+            >
             {% else %}
-              <span class="quality-badge quality-poor">{{ sleep.quality }}</span>
+            <span class="quality-badge quality-poor">{{ sleep.quality }}</span>
             {% endif %}
           </td>
 
@@ -182,7 +188,7 @@
   </div>
 
   {% else %}
-    <p class="empty-message">No sleep logs available.</p>
+  <p class="empty-message">No sleep logs available.</p>
   {% endif %}
 </div>
 
@@ -190,7 +196,6 @@
 <div class="modal fade" id="addSleepModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-
       <div class="modal-header">
         <h5 class="modal-title">Log Sleep</h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
@@ -198,7 +203,14 @@
 
       <form id="addSleepForm">
         <div class="modal-body">
-          <input class="form-control mb-3" name="hours" type="number" step="0.1" placeholder="Hours" required>
+          <input
+            class="form-control mb-3"
+            name="hours"
+            type="number"
+            step="0.1"
+            placeholder="Hours"
+            required
+          />
 
           <select class="form-control" name="quality" required>
             <option value="">Select Quality</option>
@@ -206,14 +218,30 @@
             <option value="Average">Average</option>
             <option value="Poor">Poor</option>
           </select>
+          <div class="mb-3">
+            <label for="food_date" class="form-label"> Date </label>
+
+            <input
+              type="date"
+              class="form-control"
+              id="food_date"
+              name="date"
+              required
+            />
+          </div>
         </div>
 
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal" type="button">Cancel</button>
+          <button
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+            type="button"
+          >
+            Cancel
+          </button>
           <button class="btn btn-primary" type="submit">Save</button>
         </div>
       </form>
-
     </div>
   </div>
 </div>
@@ -224,7 +252,10 @@
     <div class="modal-content">
       <div class="modal-header bg-success text-white">
         <h5 class="modal-title">Success</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
       </div>
       <div class="modal-body">
         <p id="successMessage" class="mb-0 fs-5"></p>
@@ -239,7 +270,10 @@
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">Error</h5>
-        <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+        ></button>
       </div>
       <div class="modal-body">
         <p id="errorMessage" class="mb-0 fs-5"></p>
@@ -252,7 +286,6 @@
 <div class="modal fade" id="deleteModal">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
-
       <div class="modal-header bg-warning">
         <h5 class="modal-title">Confirm Delete</h5>
         <button class="btn-close" data-bs-dismiss="modal"></button>
@@ -263,19 +296,22 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">
+          Cancel
+        </button>
         <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
       </div>
-
     </div>
   </div>
 </div>
 
-{% endblock content %}
-
-{% block scripts %}
+{% endblock content %} {% block scripts %}
 
 <script type="module">
+  const foodDateInput = document.getElementById("food_date");
+
+  foodDateInput.value = new Date().toISOString().split("T")[0];
+  
   import { showModal, hideModal, getErrorMessage } from "/static/js/utils.js";
 
   // ADD SLEEP
@@ -311,8 +347,7 @@
         showModal("errorModal");
       }
     } catch {
-      document.getElementById("errorMessage").textContent =
-        "Network error";
+      document.getElementById("errorMessage").textContent = "Network error";
       hideModal("addSleepModal");
       showModal("errorModal");
     }
@@ -324,10 +359,11 @@
   const deleteMessage = document.getElementById("deleteMessage");
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-  document.querySelectorAll(".delete-sleep-btn").forEach(btn => {
+  document.querySelectorAll(".delete-sleep-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedId = btn.dataset.id;
-      deleteMessage.textContent = "Are you sure you want to delete this sleep log?";
+      deleteMessage.textContent =
+        "Are you sure you want to delete this sleep log?";
     });
   });
 
@@ -336,7 +372,7 @@
 
     try {
       const res = await fetch(`/api/users/1/sleep_logs/${selectedId}`, {
-        method: "DELETE"
+        method: "DELETE",
       });
 
       if (res.ok) {

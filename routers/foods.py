@@ -21,20 +21,29 @@ async def add_food(user_id: int, food: FoodCreate, db: Annotated[AsyncSession, D
 
     stored_food = results.scalars().first()
 
-    if not stored_food:
+    results = await db.execute(
+        select(models.Custom_Food)
+        .where(models.Custom_Food.food_name == food.food_name.strip().lower())
+    )
+
+    custom_stored_food = results.scalars().first()
+
+    selected_food = stored_food or custom_stored_food
+
+    if not selected_food:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
                             detail="No food with given detail is found")
-
 
     
     new_food = models.Food(
         food_name = food.food_name,
+        date = food.date,
         user_id = user_id,
         quantity_g = food.quantity_g,
-        calories = stored_food.calories * food.quantity_g,
-        carbohydrate = stored_food.carbohydrate * food.quantity_g,
-        fat = stored_food.fat * food.quantity_g,
-        protein = stored_food.protein * food.quantity_g
+        calories = (selected_food.calories * food.quantity_g) / 100,
+        carbohydrate = (selected_food.carbohydrate * food.quantity_g) / 100,
+        fat = (selected_food.fat * food.quantity_g) / 100,
+        protein = (selected_food.protein * food.quantity_g) / 100
     )
 
     db.add(new_food)
@@ -95,4 +104,17 @@ async def search_food(q: str, db: Annotated[AsyncSession, Depends(get_db)]):
 
     foods = results.scalars().all()
 
-    return [{"id": food.id, "food_name": food.food_name} for food in foods]
+    results = await db.execute(
+        select(models.Custom_Food)
+        .where(models.Custom_Food.food_name.ilike(f"%{q}%"))
+        .limit(10)
+    )
+
+    custom_foods = results.scalars().all()
+
+    list_foods = [{"id": food.id, "food_name": food.food_name} for food in foods]
+    list_custom_foods = [{"id": food.id, "food_name": food.food_name} for food in custom_foods]
+
+    list_foods.extend(list_custom_foods)
+
+    return list_foods

@@ -29,7 +29,9 @@ async def add_sleep(user_id: int, sleep: SleepCreate, db: Annotated[AsyncSession
     new_sleep = models.Sleep(
         hours = sleep.hours,
         quality = sleep.quality,
-        user_id = user_id
+        date = sleep.date,
+        user_id = user_id,
+
     )
 
     db.add(new_sleep)

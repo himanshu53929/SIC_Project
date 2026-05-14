@@ -189,14 +189,25 @@
   <div class="food-header">
     <h1 class="food-title">Food Nutrition Table</h1>
 
-    <button
-      class="btn btn-primary add-food-btn"
-      type="button"
-      data-bs-toggle="modal"
-      data-bs-target="#addFoodModal"
-    >
-      + Add Food
-    </button>
+    <div class="d-flex gap-2 flex-wrap">
+      <button
+        class="btn btn-primary add-food-btn"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#addFoodModal"
+      >
+        + Add Food
+      </button>
+
+      <button
+        class="btn btn-success add-food-btn"
+        type="button"
+        data-bs-toggle="modal"
+        data-bs-target="#addCustomFoodModal"
+      >
+        + Add Custom Food
+      </button>
+    </div>
   </div>
 
   {% if foods %}
@@ -219,15 +230,10 @@
         {% for food in foods %}
         <tr>
           <td class="food-name">{{ food.food_name }}</td>
-
           <td>{{ food.quantity_g }}</td>
-
           <td>{{ food.calories }}</td>
-
           <td>{{ food.protein }}</td>
-
           <td>{{ food.carbohydrate }}</td>
-
           <td>{{ food.fat }}</td>
 
           <td>
@@ -251,13 +257,13 @@
 
   <div class="empty-state">
     <h3>No Foods Added Yet</h3>
-    <p>Click the "Add Food" button to start tracking nutrition.</p>
+    <p>Click the buttons above to start tracking nutrition.</p>
   </div>
 
   {% endif %}
 </div>
 
-<!-- Add Food Modal -->
+<!-- Log Food Modal -->
 <div
   class="modal fade"
   id="addFoodModal"
@@ -312,6 +318,18 @@
               required
             />
           </div>
+
+          <div class="mb-3">
+            <label for="food_date" class="form-label"> Date </label>
+
+            <input
+              type="date"
+              class="form-control"
+              id="food_date"
+              name="date"
+              required
+            />
+          </div>
         </div>
 
         <div class="modal-footer">
@@ -324,6 +342,119 @@
           </button>
 
           <button type="submit" class="btn btn-primary">Add Food</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Custom Food Modal -->
+<div
+  class="modal fade"
+  id="addCustomFoodModal"
+  tabindex="-1"
+  aria-labelledby="addCustomFoodModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title" id="addCustomFoodModalLabel">
+          Add Custom Food
+        </h5>
+
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+
+      <form id="addCustomFoodForm">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="custom_food_name" class="form-label"> Food Name </label>
+
+            <input
+              type="text"
+              class="form-control"
+              id="custom_food_name"
+              name="food_name"
+              placeholder="Example: Homemade Sandwich"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="custom_calories" class="form-label"> Calories </label>
+
+            <input
+              type="number"
+              class="form-control"
+              id="custom_calories"
+              name="calories"
+              min="0.1"
+              step="0.1"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="custom_carbohydrate" class="form-label">
+              Carbohydrate (g)
+            </label>
+
+            <input
+              type="number"
+              class="form-control"
+              id="custom_carbohydrate"
+              name="carbohydrate"
+              min="0"
+              step="0.1"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="custom_protein" class="form-label"> Protein (g) </label>
+
+            <input
+              type="number"
+              class="form-control"
+              id="custom_protein"
+              name="protein"
+              min="0"
+              step="0.1"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="custom_fat" class="form-label"> Fat (g) </label>
+
+            <input
+              type="number"
+              class="form-control"
+              id="custom_fat"
+              name="fat"
+              min="0"
+              step="0.1"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancel
+          </button>
+
+          <button type="submit" class="btn btn-success">Add Custom Food</button>
         </div>
       </form>
     </div>
@@ -398,12 +529,13 @@
   </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-warning">
         <h5 class="modal-title">Confirm Delete</h5>
+
         <button
           type="button"
           class="btn-close"
@@ -429,7 +561,15 @@
 {% endblock content %} {% block scripts %}
 
 <script type="module">
+  const foodDateInput = document.getElementById("food_date");
+
+  foodDateInput.value = new Date().toISOString().split("T")[0];
+
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
+
+  // =========================
+  // ADD FOOD
+  // =========================
 
   const addFoodForm = document.getElementById("addFoodForm");
 
@@ -484,13 +624,84 @@
       }
     } catch (error) {
       document.getElementById("errorMessage").textContent =
-        "Network error. Please check your connection and try again.";
+        "Network error. Please try again.";
 
       hideModal("addFoodModal");
 
       showModal("errorModal");
     }
   });
+
+  // ADD CUSTOM FOOD
+
+  const addCustomFoodForm = document.getElementById("addCustomFoodForm");
+
+  addCustomFoodForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(addCustomFoodForm);
+
+    const customFoodData = Object.fromEntries(formData.entries());
+
+    customFoodData.calories = parseFloat(customFoodData.calories);
+
+    customFoodData.carbohydrate = parseFloat(customFoodData.carbohydrate);
+
+    customFoodData.protein = parseFloat(customFoodData.protein);
+
+    customFoodData.fat = parseFloat(customFoodData.fat);
+
+    try {
+      const response = await fetch("/api/users/1/custom_food", {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify(customFoodData),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        document.getElementById("successMessage").textContent =
+          `"${data.food_name}" custom food added successfully!`;
+
+        hideModal("addCustomFoodModal");
+
+        showModal("successModal");
+
+        addCustomFoodForm.reset();
+
+        document.getElementById("successModal").addEventListener(
+          "hidden.bs.modal",
+          () => {
+            window.location.reload();
+          },
+          { once: true },
+        );
+      } else {
+        const error = await response.json();
+
+        document.getElementById("errorMessage").textContent =
+          getErrorMessage(error);
+
+        hideModal("addCustomFoodModal");
+
+        showModal("errorModal");
+      }
+    } catch (error) {
+      document.getElementById("errorMessage").textContent =
+        "Network error. Please try again.";
+
+      hideModal("addCustomFoodModal");
+
+      showModal("errorModal");
+    }
+  });
+
+  // SEARCH SUGGESTIONS
 
   const foodInput = document.getElementById("food_name");
 
@@ -549,13 +760,14 @@
     }
   });
 
-  // Delete Logic
+  // Delete Food Logic
+
   let selectedFoodId = null;
 
   const deleteMessage = document.getElementById("deleteMessage");
+
   const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-  // When delete button is clicked
   document.querySelectorAll(".delete-food-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       selectedFoodId = btn.dataset.id;
@@ -566,7 +778,6 @@
     });
   });
 
-  // Confirm delete
   confirmDeleteBtn.addEventListener("click", async () => {
     if (!selectedFoodId) return;
 
@@ -576,12 +787,11 @@
       });
 
       if (response.ok) {
-        const data = await response.json().catch(() => null);
-
         document.getElementById("successMessage").textContent =
           "Food deleted successfully!";
 
         hideModal("deleteModal");
+
         showModal("successModal");
 
         document
@@ -596,6 +806,7 @@
           getErrorMessage(error);
 
         hideModal("deleteModal");
+
         showModal("errorModal");
       }
     } catch (err) {
@@ -603,6 +814,7 @@
         "Network error. Please try again.";
 
       hideModal("deleteModal");
+
       showModal("errorModal");
     }
   });

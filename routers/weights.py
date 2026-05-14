@@ -28,6 +28,7 @@ async def add_weight(user_id: int, weight: WeightCreate, db: Annotated[AsyncSess
 
     new_weight = models.Weight(
         weight_kg = weight.weight_kg,
+        date = weight.date,
         user_id = user_id
     )
 
