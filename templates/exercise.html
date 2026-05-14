@@ -146,7 +146,7 @@
 
 <div class="exercise-container">
   <div class="exercise-header">
-    <h1 class="exercise-title">Exercise Logs</h1>
+    <h1 class="exercise-title">Today's Exercise Logs</h1>
 
     <button
       class="btn btn-primary add-exercise-btn"
@@ -272,41 +272,6 @@
   </div>
 </div>
 
-<!-- Success Modal -->
-<div class="modal fade" id="successModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">Success</h5>
-        <button
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p id="successMessage" class="mb-0 fs-5"></p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Error Modal -->
-<div class="modal fade" id="errorModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Error</h5>
-        <button
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p id="errorMessage" class="mb-0 fs-5"></p>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
@@ -339,6 +304,7 @@
   foodDateInput.value = new Date().toISOString().split("T")[0];
 
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
+  import { getToken } from "/static/js/auth.js"
 
   // ADD EXERCISE
   const addExerciseForm = document.getElementById("addExerciseForm");
@@ -346,15 +312,29 @@
   addExerciseForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const token = getToken();
+    if (!token){
+        window.location.href = "/login";
+        return;
+    }
+
     const data = Object.fromEntries(new FormData(addExerciseForm).entries());
     data.duration_min = parseFloat(data.duration_min);
 
     try {
-      const res = await fetch("/api/users/1/exercise_logs", {
+      const res = await fetch("/api/exercises/exercise_logs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(data),
       });
+
+      if (res.status === 401){
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         const result = await res.json();
@@ -398,11 +378,24 @@
 
   confirmDeleteBtn.addEventListener("click", async () => {
     if (!selectedId) return;
+    const token = getToken();
+    if (!token){
+        window.location.href = "/login";
+        return;
+    }
 
     try {
-      const res = await fetch(`/api/users/1/exercise_logs/${selectedId}`, {
+      const res = await fetch(`/api/exercises/exercise_logs/${selectedId}`, {
         method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
       });
+
+      if (res.status === 401){
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         const data = await res.json().catch(() => null);
@@ -442,6 +435,11 @@
 
   exerciseInput.addEventListener("input", async () => {
     const query = exerciseInput.value.trim();
+    const token = getToken();
+    if (!token){
+        window.location.href = "/login";
+        return;
+    }
 
     if (query.length < 1) {
       suggestionBox.style.display = "none";
@@ -450,10 +448,22 @@
 
     try {
       const response = await fetch(
-        `/api/users/1/exercises/search?q=${encodeURIComponent(query)}`,
+        `/api/exercises/search?q=${encodeURIComponent(query)}`,
+        {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        }
       );
 
+      if (response.status === 401){
+        window.location.href = "/login";
+        return;
+      }
+
       const exercises = await response.json();
+
 
       suggestionBox.innerHTML = "";
 

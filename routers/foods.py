@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -9,21 +9,27 @@ import models
 from database import get_db
 from schemas import FoodCreate, FoodResponse, FoodUpdate
 
+from auth import CurrentUser
+
 router = APIRouter()
 
 # add food
 @router.post("/food_logs", response_model=FoodResponse, status_code=status.HTTP_201_CREATED)
-async def add_food(user_id: int, food: FoodCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+async def add_food(
+    current_user: CurrentUser, 
+    food: FoodCreate, 
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
     results = await db.execute(
         select(models.Stored_Food)
-        .where(models.Stored_Food.food_name == food.food_name.strip().lower())
+        .where(func.lower(models.Stored_Food.food_name) == food.food_name.lower())
     )
 
     stored_food = results.scalars().first()
 
     results = await db.execute(
         select(models.Custom_Food)
-        .where(models.Custom_Food.food_name == food.food_name.strip().lower())
+        .where(func.lower(models.Custom_Food.food_name) == food.food_name.lower())
     )
 
     custom_stored_food = results.scalars().first()
@@ -38,7 +44,7 @@ async def add_food(user_id: int, food: FoodCreate, db: Annotated[AsyncSession, D
     new_food = models.Food(
         food_name = food.food_name,
         date = food.date,
-        user_id = user_id,
+        user_id = current_user.id,
         quantity_g = food.quantity_g,
         calories = (selected_food.calories * food.quantity_g) / 100,
         carbohydrate = (selected_food.carbohydrate * food.quantity_g) / 100,
@@ -54,13 +60,8 @@ async def add_food(user_id: int, food: FoodCreate, db: Annotated[AsyncSession, D
 
 # Show added foods of a user
 @router.get("/food_logs", response_model=list[FoodResponse])
-async def get_foods_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't Exist")
-    
-    results = await db.execute(select(models.Food).where(models.Food.user_id == user_id))
+async def get_foods_user(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
+    results = await db.execute(select(models.Food).where(models.Food.user_id == current_user))
     foods = results.scalars().all()
 
     if foods:
@@ -74,28 +75,25 @@ async def get_foods_user(user_id: int, db: Annotated[AsyncSession, Depends(get_d
 
 # Delete Food of the user
 @router.delete("/food_logs/{food_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_food(user_id: int, food_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    # we check if the user exists
-    results = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = results.scalars().first()
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't exist.")
-    
-    # After a valid user, we check for food log in the food log
-    # Here in future we need to check for the food of the current user only.
+async def delete_food(current_user: CurrentUser, food_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
     results = await db.execute(select(models.Food).where(models.Food.id == food_id))
     food = results.scalars().first()
 
     if not food:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Food log with given entry not found")
 
+    if food.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this food log."
+        )
+
     await db.delete(food)
     await db.commit()
 
 
-@router.get("/foods/search")
-async def search_food(q: str, db: Annotated[AsyncSession, Depends(get_db)]):
+@router.get("/search")
+async def search_food(q: str, current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
     results = await db.execute(
         select(models.Stored_Food)
         .where(models.Stored_Food.food_name.ilike(f"%{q}%"))
@@ -106,7 +104,10 @@ async def search_food(q: str, db: Annotated[AsyncSession, Depends(get_db)]):
 
     results = await db.execute(
         select(models.Custom_Food)
-        .where(models.Custom_Food.food_name.ilike(f"%{q}%"))
+        .where(
+            and_(models.Custom_Food.food_name.ilike(f"%{q}%"),
+            models.Custom_Food.user_id == current_user.id)
+            )
         .limit(10)
     )
 

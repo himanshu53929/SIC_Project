@@ -1,9 +1,11 @@
 from datetime import datetime
 from datetime import date as d
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, EmailStr
 
 class UserBase(BaseModel):
-    name: str = Field(min_length=1, max_length=50)
+    username: str = Field(min_length=1, max_length=50)
+    email: EmailStr = Field(max_length=120)
+
     age: int = Field(gt=1, lt=120)
     gender: str = Field(min_length=1, max_length=50)
     weight_kg: float = Field(gt=5, lt=150)
@@ -11,12 +13,23 @@ class UserBase(BaseModel):
     goal: str = Field(min_length=1, max_length=50)
 
 class UserCreate(UserBase):
-    pass
+    password: str = Field(min_length=8)
 
-class UserResponse(UserBase):
+
+class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    username: str
+
+
+class UserPrivate(UserPublic):
+    email: EmailStr
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 
 # Food Schemas
 class FoodBase(BaseModel):
@@ -27,6 +40,7 @@ class FoodBase(BaseModel):
 
 class FoodCreate(FoodBase):
     pass
+
 
 class FoodResponse(FoodBase):
     model_config = ConfigDict(from_attributes=True)

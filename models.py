@@ -12,8 +12,13 @@ from database import Base
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    name: Mapped[str] = mapped_column(String(50), nullable=False)
+#           type hint for ide       defines actual column
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True) # auto increment
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False) # no dulplicates
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False) # required field
+    password_hash: Mapped[str] = mapped_column(String(200), nullable=False)
+    
+    # User Health Details
     age: Mapped[int] = mapped_column(Integer, nullable=False)
     gender: Mapped[str] = mapped_column(String(15), nullable=False)
     weight_kg: Mapped[float] = mapped_column(Float, nullable=False)
@@ -22,6 +27,8 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC))
+    
+    # User Other Relationships
     food_logs: Mapped[list[Food]] = relationship(back_populates="user")
     exercise_logs: Mapped[list[Exercise]] = relationship(back_populates="user")
     sleep_logs: Mapped[list[Sleep]] = relationship(back_populates="user")

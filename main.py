@@ -1,4 +1,5 @@
 from typing import Annotated
+from datetime import date
 from contextlib import asynccontextmanager
 import pandas as pd
 # Fastapi
@@ -17,6 +18,7 @@ from sqlalchemy.orm import selectinload
 
 import models
 from database import Base, engine, get_db
+from auth import CookieUser
 
 # Routers
 from routers import (foods, 
@@ -51,11 +53,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 app.include_router(users.router, prefix="/api/users", tags=["User APIs"])
-app.include_router(foods.router, prefix="/api/users/{user_id}", tags=["Food APIs"])
-app.include_router(exercises.router, prefix="/api/users/{user_id}", tags=["Exercise APIs"])
-app.include_router(sleeps.router, prefix="/api/users/{user_id}", tags=["Sleep APIs"])
-app.include_router(weights.router, prefix="/api/users/{user_id}", tags=["Weight APIs"])
-app.include_router(custom_food.router, prefix="/api/users/{user_id}", tags=["Custom Food APIs"])
+app.include_router(foods.router, prefix="/api/foods", tags=["Food APIs"])
+app.include_router(exercises.router, prefix="/api/exercises", tags=["Exercise APIs"])
+app.include_router(sleeps.router, prefix="/api/sleeps", tags=["Sleep APIs"])
+app.include_router(weights.router, prefix="/api/weights", tags=["Weight APIs"])
+app.include_router(custom_food.router, prefix="/api/custom_foods", tags=["Custom Food APIs"])
 app.include_router(load_data.router, prefix="/api/data", tags=["Load Data APIs"])
 
 
@@ -86,36 +88,29 @@ def dashboard(request: Request):
 
 
 # Profile Page
-@app.get("/profile/{user_id}", include_in_schema=False)
-async def user_profile(request: Request, user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = result.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't exist")
-    
+@app.get("/profile", include_in_schema=False)
+async def user_profile(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSession, Depends(get_db)]):
 
     return templates.TemplateResponse(
         request,
         "profile.html",
         {
-            "user": user
+            "user": cookie_user
         }
     )
 
 
 # Exercise Page
-@app.get("/users/{user_id}/exercise_logs", include_in_schema=False)
-async def exercise(request: Request, user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
+@app.get("/exercises/exercise_logs", include_in_schema=False)
+async def exercise(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSession, Depends(get_db)]):
+
     results = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id)
+        select(models.Exercise)
+        .where(
+            models.Exercise.user_id == cookie_user.id
+            ,models.Exercise.date == date.today()
+        )
     )
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="User doesn't exist.")
-    
-    results = await db.execute(select(models.Exercise).where(models.Exercise.user_id == user_id))
     exercises = results.scalars().all()
 
     return templates.TemplateResponse(
@@ -128,18 +123,15 @@ async def exercise(request: Request, user_id: int, db: Annotated[AsyncSession, D
 
 
 # Sleep Page
-@app.get("/users/{user_id}/sleep_logs", include_in_schema=False)
-async def sleep(request: Request, user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id)
-    )
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="User doesn't exist.")
+@app.get("/sleeps/sleep_logs", include_in_schema=False)
+async def sleep(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSession, Depends(get_db)]):
     
-    results = await db.execute(select(models.Sleep).where(models.Sleep.user_id == user_id))
+    results = await db.execute(
+        select(models.Sleep)
+        .where(
+            models.Sleep.user_id == cookie_user.id,
+            models.Sleep.date == date.today()
+            ))
     sleeps = results.scalars().all()
 
     return templates.TemplateResponse(
@@ -151,18 +143,17 @@ async def sleep(request: Request, user_id: int, db: Annotated[AsyncSession, Depe
     )
 
 # Food Page
-@app.get("/users/{user_id}/food_logs", include_in_schema=False)
-async def food_templates(request: Request, user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id)
-    )
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="User doesn't exist.")
+@app.get("/foods/food_logs", include_in_schema=False)
+async def food_templates(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSession, Depends(get_db)]):
+
     
-    results = await db.execute(select(models.Food).where(models.Food.user_id == user_id))
+    results = await db.execute(
+        select(models.Food)
+        .where(
+            models.Food.user_id == cookie_user.id,
+            models.Food.date == date.today()
+            )
+        )
     foods = results.scalars().all()
 
     return templates.TemplateResponse(
@@ -172,6 +163,29 @@ async def food_templates(request: Request, user_id: int, db: Annotated[AsyncSess
             "foods": foods
         }
     )
+
+
+# Weight Page
+@app.get("/weights/weight_logs", include_in_schema=False)
+async def weight(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSession, Depends(get_db)]):
+    
+    results = await db.execute(
+        select(models.Weight)
+        .where(
+            models.Weight.user_id == cookie_user.id
+            )
+        )
+    weights = results.scalars().all()
+
+
+    return templates.TemplateResponse(
+        request,
+        "weight.html",
+        {
+            "weights": weights
+        }
+    )
+
 
 # Analytics Page
 @app.get("/analytics", include_in_schema=False)
@@ -184,28 +198,24 @@ def analytics(request: Request):
         }
     )           
 
-# Weight Page
-@app.get("/users/{user_id}/weight_logs", include_in_schema=False)
-async def weight(request: Request, user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id)
-    )
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="User doesn't exist.")
-    
-    results = await db.execute(select(models.Weight).where(models.Weight.user_id == user_id))
-    weights = results.scalars().all()
 
 
+
+@app.get("/login", include_in_schema=False)
+async def login_page(request: Request):
     return templates.TemplateResponse(
         request,
-        "weight.html",
-        {
-            "weights": weights
-        }
+        "login.html",
+        {"title": "Login"}
+    )
+
+
+@app.get("/register", include_in_schema=False)
+async def register_page(request: Request):
+    return templates.TemplateResponse(
+        request,
+        "register.html",
+        {"title": "Register"}
     )
 
 # About Page

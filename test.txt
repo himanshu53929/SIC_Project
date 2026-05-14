@@ -1,0 +1,10 @@
+{
+  "username": "Himanshu",
+  "email": "himanshu@example.com",
+  "age": 20,
+  "gender": "Male",
+  "weight_kg": 76,
+  "height_cm": 175,
+  "goal": "Balance",
+  "password": "himanshu1"
+}

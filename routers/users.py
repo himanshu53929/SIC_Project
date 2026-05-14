@@ -1,21 +1,55 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, HTTPException, status, Response
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 import models
 from database import get_db
-from schemas import UserResponse, UserCreate
+from schemas import UserCreate, UserPublic, UserPrivate, Token
+
+from datetime import timedelta
+from fastapi.security import OAuth2PasswordRequestForm
+
+from auth import (
+    CurrentUser,
+    create_access_token, 
+    hash_password,
+    verify_password
+    )
+from config import settings
 
 router = APIRouter()
 
 
-@router.post("/{user_id}/profile", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def profile(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+@router.post("", response_model=UserPrivate, status_code=status.HTTP_201_CREATED)
+async def create_user(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+    result = await db.execute(
+        select(models.User)
+        .where(func.lower(models.User.username) == user.username.lower())
+        )
+
+    existing_user = result.scalars().first()
+
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                             detail="User with same username already exists")
+    
+    result = await db.execute(select(models.User)
+                              .where(func.lower(models.User.email) == user.email.lower()))
+
+    existing_email = result.scalars().first()
+
+    if existing_email:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                             detail="User with same email already exists")
+
     new_user = models.User(
-        name = user.name,
+        username = user.username,
+        email = user.email.lower(),
+        password_hash = hash_password(user.password),
+
         age = user.age,
         gender = user.gender,
         height_cm = user.height_cm,
@@ -29,8 +63,57 @@ async def profile(user: UserCreate, db: Annotated[AsyncSession, Depends(get_db)]
 
     return new_user
 
+
+@router.post("/token", response_model=Token)
+async def login_for_access_token(
+    response: Response,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    # Look up user by email (case-insensitive)
+    # Note: OAuth2PasswordRequestForm uses "username" field, but we treat it as email
+    result = await db.execute(
+        select(models.User)
+        .where(func.lower(models.User.email) == form_data.username.lower())
+    )
+
+    user = result.scalars().first()
+
+    # Verify user exists and password is correct
+    # Don't reveal which one failed (security best practice)
+    if not user or not verify_password(form_data.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
+    # Create acces token with user id as subject
+    access_token_expires = timedelta(minutes=settings.access_token_expire_minutes)
+    access_token = create_access_token(
+        data={"sub": str(user.id)},
+        expires_delta=access_token_expires
+    )
+
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        samesite="lax",
+        max_age=settings.access_token_expire_minutes * 60
+    )
+
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+## get_current_user
+@router.get("/me", response_model=UserPrivate)
+async def get_current_user(current_user: CurrentUser):
+    return current_user
+
+
 # View Users
-@router.get("", response_model=list[UserResponse])
+@router.get("", response_model=list[UserPublic])
 async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):
     result = await db.execute(select(models.User))
     users = result.scalars().all()
@@ -40,12 +123,14 @@ async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):
 
     return users
 
-@router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    result = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = result.scalars().first()
 
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Users Found")
+# Logout
+@router.post("/logout")
+async def logout(response: Response):
+    response.delete_cookie("access_token")
+    return {"message": "Logged Out"}
 
-    return user
+
+
+
+

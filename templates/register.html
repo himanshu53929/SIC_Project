@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+
+{% block css %}
+<style>
+
+  .content-section {
+    max-width: 520px;
+    margin: 50px auto;
+    padding: 25px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  }
+
+  .content-section h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+
+  /* inputs ONLY inside register page */
+  .content-section input {
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: 0.2s ease;
+    font-size: 14px;
+  }
+
+  .content-section input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+  }
+
+  /* ONLY register submit button */
+  .content-section button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #0d6efd;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  .content-section button[type="submit"]:hover {
+    background: #0b5ed7;
+  }
+
+  /* link section */
+  .content-section p {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+  }
+
+  .content-section a {
+    color: #0d6efd;
+    text-decoration: none;
+  }
+
+  .content-section a:hover {
+    text-decoration: underline;
+  }
+
+  /* password error */
+  #passwordError {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+</style>
+{% endblock css %}
+
+{% block content %}
+<div class="content-section">
+  <h2>Register</h2>
+
+  <form id="registerForm">
+
+    <input type="text" name="username" placeholder="Username" required />
+
+    <input type="email" name="email" placeholder="Email" required />
+
+    <input type="password" name="password" id="password" placeholder="Password" required />
+
+    <input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+
+    <div id="passwordError" style="display:none; color:red;">
+      Passwords do not match
+    </div>
+
+    <input type="number" name="age" placeholder="Age" required />
+
+    <input type="text" name="gender" placeholder="Gender" required />
+
+    <input type="number" step="0.1" name="weight_kg" placeholder="Weight (kg)" required />
+
+    <input type="number" step="0.1" name="height_cm" placeholder="Height (cm)" required />
+
+    <input type="text" name="goal" placeholder="Goal (e.g. fat loss, bulk)" required />
+
+    <button type="submit">Register</button>
+  </form>
+
+  <p>
+    Already have an account?
+    <a href="{{ url_for('login_page') }}">Login</a>
+  </p>
+</div>
+
+
+{% endblock content %}
+
+{% block scripts %}
+<script type="module">
+import { getErrorMessage, showModal } from "/static/js/utils.js";
+
+const form = document.getElementById("registerForm");
+const password = document.getElementById("password");
+const confirmPassword = document.getElementById("confirmPassword");
+const errorBox = document.getElementById("passwordError");
+
+// Confirming password my matching them
+confirmPassword.addEventListener("input", () => {
+  if (password.value !== confirmPassword.value) {
+    errorBox.style.display = "block";
+    confirmPassword.setCustomValidity("Mismatch");
+  } else {
+    errorBox.style.display = "none";
+    confirmPassword.setCustomValidity("");
+  }
+});
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+
+  if (password.value !== confirmPassword.value) return;
+
+  const formData = new FormData(form);
+
+  const userData = {
+    username: formData.get("username"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    age: Number(formData.get("age")),
+    gender: formData.get("gender"),
+    weight_kg: Number(formData.get("weight_kg")),
+    height_cm: Number(formData.get("height_cm")),
+    goal: formData.get("goal"),
+  };
+
+  try {
+    const response = await fetch("/api/users", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (response.ok) {
+        // Show success Modal and redirect to login
+      document.getElementById("successMessage").textContent =
+        "Account created successfully! Please login.";
+      showModal("successModal");
+
+      document
+        .getElementById("successModal")
+        .addEventListener(
+          "hidden.bs.modal",
+          () => (window.location.href = "/login"),
+          { once: true }
+        );
+    } else {
+      const error = await response.json();
+      document.getElementById("errorMessage").textContent =
+        getErrorMessage(error);
+      showModal("errorModal");
+    }
+  } catch (err) {
+    document.getElementById("errorMessage").textContent =
+      "Network error. Try again.";
+    showModal("errorModal");
+  }
+});
+</script>
+{% endblock scripts %}

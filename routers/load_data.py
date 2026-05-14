@@ -20,9 +20,6 @@ async def load_exercises_from_csv(
     # Read CSV
     df = pd.read_csv(csv_file)
 
-    # Optional cleanup
-    df["Exercise"] = df["Exercise"].str.strip().str.lower()
-
     exercises = []
 
     for _, row in df.iterrows():
@@ -54,8 +51,6 @@ async def load_foods_from_csv(
     # Read CSV
     df = pd.read_csv(csv_file)
 
-    # Optional cleanup
-    df["food_name"] = df["food_name"].str.strip().str.lower()
 
     foods = []
 

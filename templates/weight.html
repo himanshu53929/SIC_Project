@@ -248,44 +248,6 @@
   </div>
 </div>
 
-<!-- SUCCESS MODAL -->
-<div class="modal fade" id="successModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">Success</h5>
-      </div>
-
-      <div class="modal-body">
-        <p id="successMessage" class="mb-0 fs-5"></p>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ERROR MODAL -->
-<div class="modal fade" id="errorModal" tabindex="-1">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Error</h5>
-      </div>
-
-      <div class="modal-body">
-        <p id="errorMessage" class="mb-0 fs-5"></p>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- DELETE CONFIRMATION MODAL -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
@@ -315,6 +277,7 @@
   foodDateInput.value = new Date().toISOString().split("T")[0];
 
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
+  import { getToken } from "/static/js/auth.js";
 
   /* ADD WEIGHT */
   const addWeightForm = document.getElementById("addWeightForm");
@@ -322,15 +285,29 @@
   addWeightForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     const data = Object.fromEntries(new FormData(addWeightForm));
     data.weight_kg = parseFloat(data.weight_kg);
 
     try {
-      const res = await fetch("/api/users/1/weight_logs", {
+      const res = await fetch("/api/weights/weight_logs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
+
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         document.getElementById("successMessage").textContent =
@@ -380,10 +357,24 @@
   confirmDeleteBtn.addEventListener("click", async () => {
     if (!selectedId) return;
 
+    const token = getToken();
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
     try {
-      const res = await fetch(`/api/users/1/weight_logs/${selectedId}`, {
+      const res = await fetch(`/api/weights/weight_logs/${selectedId}`, {
         method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
       });
+
+      if (res.status === 401){
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         hideModal("deleteModal");

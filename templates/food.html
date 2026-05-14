@@ -187,8 +187,8 @@
 
 <div class="food-container">
   <div class="food-header">
-    <h1 class="food-title">Food Nutrition Table</h1>
-
+    <h1 class="food-title">Today's Food Nutrition Table</h1>
+    
     <div class="d-flex gap-2 flex-wrap">
       <button
         class="btn btn-primary add-food-btn"
@@ -461,74 +461,6 @@
   </div>
 </div>
 
-<!-- Success Modal -->
-<div
-  class="modal fade"
-  id="successModal"
-  tabindex="-1"
-  aria-labelledby="successModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title" id="successModalLabel">Success</h5>
-
-        <button
-          type="button"
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-
-      <div class="modal-body">
-        <p id="successMessage" class="fs-5 mb-0"></p>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Error Modal -->
-<div
-  class="modal fade"
-  id="errorModal"
-  tabindex="-1"
-  aria-labelledby="errorModalLabel"
-  aria-hidden="true"
->
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="errorModalLabel">Error</h5>
-
-        <button
-          type="button"
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-          aria-label="Close"
-        ></button>
-      </div>
-
-      <div class="modal-body">
-        <p id="errorMessage" class="fs-5 mb-0"></p>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -567,6 +499,8 @@
 
   import { getErrorMessage, hideModal, showModal } from "/static/js/utils.js";
 
+  import { getToken } from "/static/js/auth.js";
+
   // =========================
   // ADD FOOD
   // =========================
@@ -576,6 +510,12 @@
   addFoodForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     const formData = new FormData(addFoodForm);
 
     const foodData = Object.fromEntries(formData.entries());
@@ -583,15 +523,21 @@
     foodData.quantity_g = parseFloat(foodData.quantity_g);
 
     try {
-      const response = await fetch("/api/users/1/food_logs", {
+      const response = await fetch("/api/foods/food_logs", {
         method: "POST",
 
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
 
         body: JSON.stringify(foodData),
       });
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -639,6 +585,12 @@
   addCustomFoodForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     const formData = new FormData(addCustomFoodForm);
 
     const customFoodData = Object.fromEntries(formData.entries());
@@ -652,15 +604,21 @@
     customFoodData.fat = parseFloat(customFoodData.fat);
 
     try {
-      const response = await fetch("/api/users/1/custom_food", {
+      const response = await fetch("/api/custom_foods", {
         method: "POST",
 
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
 
         body: JSON.stringify(customFoodData),
       });
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (response.ok) {
         const data = await response.json();
@@ -710,6 +668,12 @@
   foodInput.addEventListener("input", async () => {
     const query = foodInput.value.trim();
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     if (query.length < 1) {
       suggestionsBox.style.display = "none";
       return;
@@ -717,10 +681,21 @@
 
     try {
       const response = await fetch(
-        `/api/users/1/foods/search?q=${encodeURIComponent(query)}`,
+        `/api/foods/search?q=${encodeURIComponent(query)}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       const foods = await response.json();
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       suggestionsBox.innerHTML = "";
 
@@ -770,6 +745,12 @@
 
   document.querySelectorAll(".delete-food-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
+      const token = getToken();
+      if (!token) {
+        window.location.href = "/login";
+        return;
+      }
+
       selectedFoodId = btn.dataset.id;
 
       const name = btn.dataset.name;
@@ -780,11 +761,24 @@
 
   confirmDeleteBtn.addEventListener("click", async () => {
     if (!selectedFoodId) return;
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
 
     try {
-      const response = await fetch(`/api/users/1/food_logs/${selectedFoodId}`, {
+      const response = await fetch(`/api/foods/food_logs/${selectedFoodId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (response.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (response.ok) {
         document.getElementById("successMessage").textContent =

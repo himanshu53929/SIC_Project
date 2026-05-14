@@ -9,28 +9,19 @@ import models
 from database import get_db
 from schemas import SleepCreate, SleepResponse
 
+from auth import CurrentUser
+
 router = APIRouter()
 
 # add sleep
 @router.post("/sleep_logs", response_model=SleepResponse, status_code=status.HTTP_201_CREATED)
-async def add_sleep(user_id: int, sleep: SleepCreate, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(
-        select(models.User)
-        .where(models.User.id == user_id)
-    )
-
-    user = results.scalars().first()
-
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, 
-                            detail="User not found")   
-    
+async def add_sleep(current_user: CurrentUser, sleep: SleepCreate, db: Annotated[AsyncSession, Depends(get_db)]):
 
     new_sleep = models.Sleep(
         hours = sleep.hours,
         quality = sleep.quality,
         date = sleep.date,
-        user_id = user_id,
+        user_id = current_user.id,
 
     )
 
@@ -42,13 +33,12 @@ async def add_sleep(user_id: int, sleep: SleepCreate, db: Annotated[AsyncSession
 
 # Show added sleeps of a user
 @router.get("/sleep_logs", response_model=list[SleepResponse])
-async def get_sleeps_user(user_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = results.scalars().first()
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't Exist")
+async def get_sleeps_user(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
+
+    results = await db.execute(
+        select(models.Sleep)
+        .where(models.Sleep.user_id == current_user.id))
     
-    results = await db.execute(select(models.Sleep).where(models.Sleep.user_id == user_id))
     sleeps = results.scalars().all()
 
     if sleeps:
@@ -62,21 +52,23 @@ async def get_sleeps_user(user_id: int, db: Annotated[AsyncSession, Depends(get_
 
 # Delete Sleep log of the user
 @router.delete("/sleep_logs/{sleep_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_sleep(user_id: int, sleep_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
-    # we check if the user exists
-    results = await db.execute(select(models.User).where(models.User.id == user_id))
-    user = results.scalars().first()
+async def delete_sleep(current_user: CurrentUser, sleep_id: int, db: Annotated[AsyncSession, Depends(get_db)]):
 
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User doesn't exist.")
+    results = await db.execute(
+        select(models.Sleep)
+        .where(models.Sleep.id == sleep_id)
+        )
     
-    # After a valid user, we check for sleep log in the sleep log
-    # Here in future we need to check for the sleep of the current user only.
-    results = await db.execute(select(models.Sleep).where(models.Sleep.id == sleep_id))
     sleep = results.scalars().first()
 
     if not sleep:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="sleep log with given entry not found")
+
+    if sleep.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not authorized to delete this sleep log."
+        )
 
     await db.delete(sleep)
     await db.commit()

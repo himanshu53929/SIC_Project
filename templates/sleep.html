@@ -128,7 +128,7 @@
 
 <div class="sleep-container">
   <div class="sleep-header">
-    <h1 class="sleep-title">Sleep Logs</h1>
+    <h1 class="sleep-title">Today's Sleep Logs</h1>
 
     <button
       class="btn btn-primary add-sleep-btn"
@@ -246,42 +246,6 @@
   </div>
 </div>
 
-<!-- SUCCESS MODAL -->
-<div class="modal fade" id="successModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">Success</h5>
-        <button
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p id="successMessage" class="mb-0 fs-5"></p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ERROR MODAL -->
-<div class="modal fade" id="errorModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Error</h5>
-        <button
-          class="btn-close btn-close-white"
-          data-bs-dismiss="modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p id="errorMessage" class="mb-0 fs-5"></p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- DELETE MODAL -->
 <div class="modal fade" id="deleteModal">
   <div class="modal-dialog modal-dialog-centered">
@@ -311,8 +275,9 @@
   const foodDateInput = document.getElementById("food_date");
 
   foodDateInput.value = new Date().toISOString().split("T")[0];
-  
+
   import { showModal, hideModal, getErrorMessage } from "/static/js/utils.js";
+  import { getToken } from "/static/js/auth.js";
 
   // ADD SLEEP
   const addSleepForm = document.getElementById("addSleepForm");
@@ -320,15 +285,29 @@
   addSleepForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     const data = Object.fromEntries(new FormData(addSleepForm).entries());
     data.hours = parseFloat(data.hours);
 
     try {
-      const res = await fetch("/api/users/1/sleep_logs", {
+      const res = await fetch("/api/sleeps/sleep_logs", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
+
+      if (res.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         document.getElementById("successMessage").textContent =
@@ -370,10 +349,24 @@
   confirmDeleteBtn.addEventListener("click", async () => {
     if (!selectedId) return;
 
+    const token = getToken();
+    if (!token) {
+      window.location.href = "/login";
+      return;
+    }
+
     try {
-      const res = await fetch(`/api/users/1/sleep_logs/${selectedId}`, {
+      const res = await fetch(`/api/sleeps/sleep_logs/${selectedId}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      if (res.status === 401){
+        window.location.href = "/login";
+        return;
+      }
 
       if (res.ok) {
         location.reload();
