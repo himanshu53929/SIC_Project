@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 import models
 from database import get_db
-from schemas import UserCreate, UserPublic, UserPrivate, Token
+from schemas import UserCreate, UserPublic, UserPrivate, Token, UserUpdate
 
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
@@ -109,7 +109,41 @@ async def login_for_access_token(
 ## get_current_user
 @router.get("/me", response_model=UserPrivate)
 async def get_current_user(current_user: CurrentUser):
-    return current_user
+    # Return explicit dict to avoid serialization edge-cases
+    return {
+        "id": current_user.id,
+        "username": current_user.username,
+        "email": current_user.email,
+        "age": getattr(current_user, "age", None),
+        "gender": getattr(current_user, "gender", None),
+        "weight_kg": getattr(current_user, "weight_kg", None),
+        "height_cm": getattr(current_user, "height_cm", None),
+        "goal": getattr(current_user, "goal", None),
+    }
+
+
+@router.put("/me", response_model=UserPrivate)
+async def update_current_user(
+    payload: UserUpdate,
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)],
+):
+    # Load user from DB
+    user = await db.get(models.User, current_user.id)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Update allowed fields when provided
+    updatable = ["age", "gender", "weight_kg", "height_cm", "goal", "username", "email"]
+    for field in updatable:
+        if getattr(payload, field, None) is not None:
+            setattr(user, field, getattr(payload, field))
+
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+
+    return user
 
 
 # View Users

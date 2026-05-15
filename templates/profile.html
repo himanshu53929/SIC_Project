@@ -95,38 +95,167 @@
 
         <div class="profile-item">
             <span class="label">Name</span>
-            <span class="value">{{ user.username }}</span>
+            <span id="profile_name" class="value">{{ user.username }}</span>
         </div>
 
         <div class="profile-item">
             <span class="label">Age</span>
-            <span class="value">{{ user.age }}</span>
+            <span id="profile_age" class="value">{{ user.age }}</span>
         </div>
 
         <div class="profile-item">
             <span class="label">Gender</span>
-            <span class="value">{{ user.gender }}</span>
+            <span id="profile_gender" class="value">{{ user.gender }}</span>
         </div>
 
         <div class="profile-item">
             <span class="label">Weight</span>
-            <span class="value">{{ user.weight_kg }} kg</span>
+            <span id="profile_weight" class="value">{{ user.weight_kg }} kg</span>
         </div>
 
         <div class="profile-item">
             <span class="label">Height</span>
-            <span class="value">{{ user.height_cm }} cm</span>
+            <span id="profile_height" class="value">{{ user.height_cm }} cm</span>
         </div>
 
         <div class="profile-item">
             <span class="label">Goal</span>
-            <span class="value">{{ user.goal }}</span>
+            <span id="profile_goal" class="value">{{ user.goal }}</span>
         </div>
 
         <div class="profile-footer">
-            <a href="#" class="btn">Edit Profile</a>
+            <a href="#" id="editProfileBtn" class="btn" data-bs-toggle="modal" data-bs-target="#editProfileModal">Edit Profile</a>
         </div>
 
     </div>
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script type="module">
+    import { getCurrentUser, getToken, clearUserCache } from "/static/js/auth.js";
+
+    const fillValues = (user) => {
+        document.getElementById('profile_age').textContent = user.age ?? '-';
+        document.getElementById('profile_gender').textContent = user.gender ?? '-';
+        document.getElementById('profile_weight').textContent = user.weight_kg ? `${user.weight_kg} kg` : '-';
+        document.getElementById('profile_height').textContent = user.height_cm ? `${user.height_cm} cm` : '-';
+        document.getElementById('profile_goal').textContent = user.goal ?? '-';
+        document.getElementById('profile_name').textContent = user.username ?? '-';
+    };
+
+    // Populate display fields with server-rendered values when available
+    try {
+        const userFromServer = {
+            username: '{{ user.username }}',
+            age: {{ user.age or 'null' }},
+            gender: '{{ user.gender }}',
+            weight_kg: {{ user.weight_kg or 'null' }},
+            height_cm: {{ user.height_cm or 'null' }},
+            goal: '{{ user.goal }}'
+        };
+        // Ensure elements exist
+        if (document.getElementById('profile_age')) {
+            fillValues(userFromServer);
+        }
+    } catch (e) {
+        // ignore templating substitution errors
+    }
+
+    // When opening modal, load current user and fill form
+    document.getElementById('editProfileBtn').addEventListener('click', async (ev) => {
+        ev.preventDefault();
+        const user = await getCurrentUser();
+        if (!user) {
+            window.location.href = '/login';
+            return;
+        }
+        // Fill modal fields
+        document.getElementById('inputUsername').value = user.username || '';
+        document.getElementById('inputEmail').value = user.email || '';
+        document.getElementById('inputAge').value = user.age || '';
+        document.getElementById('inputGender').value = user.gender || '';
+        document.getElementById('inputWeight').value = user.weight_kg || '';
+        document.getElementById('inputHeight').value = user.height_cm || '';
+        document.getElementById('inputGoal').value = user.goal || '';
+    });
+
+    // Handle save
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const payload = {};
+        const fields = ['Username','Email','Age','Gender','Weight','Height','Goal'];
+        const mapping = {
+            Username: 'username', Email: 'email', Age: 'age', Gender: 'gender', Weight: 'weight_kg', Height: 'height_cm', Goal: 'goal'
+        };
+
+        fields.forEach((f) => {
+            const el = document.getElementById('input' + f);
+            if (!el) return;
+            const val = el.value;
+            if (val !== undefined && val !== null && String(val).trim() !== '') {
+                const key = mapping[f];
+                payload[key] = (key === 'age' ? Number(val) : key === 'weight_kg' || key === 'height_cm' ? Number(val) : val);
+            }
+        });
+
+        try {
+            const token = getToken();
+            const res = await fetch('/api/users/me', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                },
+                body: JSON.stringify(payload),
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.detail || 'Unable to save profile');
+                return;
+            }
+
+            const updated = await res.json();
+            clearUserCache();
+            // update displayed values
+            fillValues(updated);
+            // hide modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editProfileModal'));
+            if (modal) modal.hide();
+        } catch (error) {
+            console.error(error);
+            alert('Error saving profile');
+        }
+    });
+</script>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-2"><label class="form-label">Username</label><input id="inputUsername" class="form-control" /></div>
+                <div class="mb-2"><label class="form-label">Email</label><input id="inputEmail" type="email" class="form-control" /></div>
+                <div class="row g-2">
+                    <div class="col-4"><label class="form-label">Age</label><input id="inputAge" type="number" class="form-control" /></div>
+                    <div class="col-4"><label class="form-label">Gender</label><input id="inputGender" class="form-control" /></div>
+                    <div class="col-4"><label class="form-label">Goal</label><input id="inputGoal" class="form-control" /></div>
+                </div>
+                <div class="row g-2 mt-2">
+                    <div class="col-6"><label class="form-label">Weight (kg)</label><input id="inputWeight" type="number" step="0.1" class="form-control" /></div>
+                    <div class="col-6"><label class="form-label">Height (cm)</label><input id="inputHeight" type="number" step="0.1" class="form-control" /></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="saveProfileBtn" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock scripts %}
