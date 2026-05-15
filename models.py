@@ -29,11 +29,11 @@ class User(Base):
         default=lambda: datetime.now(UTC))
     
     # User Other Relationships
-    food_logs: Mapped[list[Food]] = relationship(back_populates="user")
-    exercise_logs: Mapped[list[Exercise]] = relationship(back_populates="user")
-    sleep_logs: Mapped[list[Sleep]] = relationship(back_populates="user")
-    weight_logs: Mapped[list[Weight]] = relationship(back_populates="user")
-    custom_foods: Mapped[list[Custom_Food]] = relationship(back_populates="user")
+    food_logs: Mapped[list[Food]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    exercise_logs: Mapped[list[Exercise]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    sleep_logs: Mapped[list[Sleep]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    weight_logs: Mapped[list[Weight]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    custom_foods: Mapped[list[Custom_Food]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
 
 class Food(Base):

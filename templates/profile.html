@@ -16,23 +16,17 @@
 
     .profile-card {
         width: 100%;
-        max-width: 420px;
+        max-width: 500px;
         background: #ffffff;
         border-radius: 16px;
         padding: 25px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .profile-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
     }
 
     .profile-title {
         text-align: center;
-        font-size: 22px;
-        font-weight: bold;
+        font-size: 24px;
+        font-weight: 700;
         margin-bottom: 20px;
         color: #333;
     }
@@ -40,15 +34,11 @@
     .profile-item {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         padding: 12px 10px;
         margin: 8px 0;
-        border-radius: 8px;
+        border-radius: 10px;
         background: #f9fafb;
-        transition: background 0.2s;
-    }
-
-    .profile-item:hover {
-        background: #eef2ff;
     }
 
     .label {
@@ -62,31 +52,50 @@
     }
 
     .profile-footer {
-        margin-top: 20px;
-        text-align: center;
+        margin-top: 25px;
     }
 
-    .btn {
-        display: inline-block;
-        padding: 10px 16px;
-        border-radius: 8px;
-        border: none;
-        cursor: pointer;
+    .btn-primary-custom {
         background: #4f46e5;
+        border: none;
         color: white;
-        font-weight: 500;
-        transition: 0.3s;
-        text-decoration: none;
     }
 
-    .btn:hover {
+    .btn-primary-custom:hover {
         background: #3730a3;
+        color: white;
+    }
+
+    .modal-content {
+        border: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 10px;
+    }
+
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #4f46e5;
     }
 </style>
 {% endblock css %}
 
 {% block content %}
+
 <div class="profile-wrapper">
+
     <div class="profile-card">
 
         <div class="profile-title">
@@ -94,8 +103,13 @@
         </div>
 
         <div class="profile-item">
-            <span class="label">Name</span>
+            <span class="label">Username</span>
             <span class="value">{{ user.username }}</span>
+        </div>
+
+        <div class="profile-item">
+            <span class="label">Email</span>
+            <span class="value">{{ user.email }}</span>
         </div>
 
         <div class="profile-item">
@@ -123,10 +137,448 @@
             <span class="value">{{ user.goal }}</span>
         </div>
 
-        <div class="profile-footer">
-            <a href="#" class="btn">Edit Profile</a>
+        <div class="profile-footer d-flex gap-2 justify-content-center flex-wrap">
+
+            <button
+                class="btn btn-primary-custom"
+                data-bs-toggle="modal"
+                data-bs-target="#editProfileModal"
+            >
+                Edit Profile
+            </button>
+
+            <button
+                class="btn btn-danger"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteProfileModal"
+            >
+                Delete Account
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Edit Profile Modal -->
+
+<div
+    class="modal fade"
+    id="editProfileModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Edit Profile
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+
+            <form id="editProfileForm">
+
+                <div class="modal-body">
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Username
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="username"
+                            minlength="1"
+                            maxlength="50"
+                            value="{{ user.username }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            class="form-control"
+                            name="email"
+                            maxlength="120"
+                            value="{{ user.email }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Age
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="age"
+                            min="2"
+                            max="119"
+                            value="{{ user.age }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Gender
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="gender"
+                            minlength="1"
+                            maxlength="50"
+                            value="{{ user.gender }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Weight (kg)
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="weight_kg"
+                            min="5.1"
+                            max="149.9"
+                            step="0.1"
+                            value="{{ user.weight_kg }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Height (cm)
+                        </label>
+
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="height_cm"
+                            min="30.1"
+                            max="279.9"
+                            step="0.1"
+                            value="{{ user.height_cm }}"
+                        />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Goal
+                        </label>
+
+                        <input
+                            type="text"
+                            class="form-control"
+                            name="goal"
+                            minlength="1"
+                            maxlength="50"
+                            value="{{ user.goal }}"
+                        />
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancel
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary-custom"
+                    >
+                        Save Changes
+                    </button>
+
+                </div>
+
+            </form>
+
         </div>
 
     </div>
 </div>
+
+<!-- Delete Profile Modal -->
+
+<div
+    class="modal fade"
+    id="deleteProfileModal"
+    tabindex="-1"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered">
+
+        <div class="modal-content">
+
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">
+                    Confirm Account Deletion
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+
+            <div class="modal-body">
+
+                <p class="fs-5 mb-0">
+                    Are you sure you want to permanently delete your account?
+                </p>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    id="confirmDeleteProfileBtn"
+                    class="btn btn-danger"
+                >
+                    Delete Account
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
 {% endblock content %}
+
+{% block scripts %}
+
+<script type="module">
+
+import {
+    getErrorMessage,
+    hideModal,
+    showModal
+} from "/static/js/utils.js";
+
+import { getToken } from "/static/js/auth.js";
+
+
+// =========================
+// EDIT PROFILE
+// =========================
+
+const editProfileForm = document.getElementById("editProfileForm");
+
+editProfileForm.addEventListener("submit", async (event) => {
+
+    event.preventDefault();
+
+    const token = getToken();
+
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
+    const formData = new FormData(editProfileForm);
+
+    const userData = Object.fromEntries(formData.entries());
+
+    if (userData.age !== "") {
+        userData.age = parseInt(userData.age);
+    } else {
+        delete userData.age;
+    }
+
+    if (userData.weight_kg !== "") {
+        userData.weight_kg = parseFloat(userData.weight_kg);
+    } else {
+        delete userData.weight_kg;
+    }
+
+    if (userData.height_cm !== "") {
+        userData.height_cm = parseFloat(userData.height_cm);
+    } else {
+        delete userData.height_cm;
+    }
+
+    Object.keys(userData).forEach((key) => {
+        if (userData[key] === "") {
+            delete userData[key];
+        }
+    });
+
+    try {
+
+        const response = await fetch("/api/users", {
+            method: "PATCH",
+
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+
+            body: JSON.stringify(userData),
+        });
+
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (response.ok) {
+
+            hideModal("editProfileModal");
+
+            document.getElementById("successMessage").textContent =
+                "Profile updated successfully!";
+
+            showModal("successModal");
+
+            document
+                .getElementById("successModal")
+                .addEventListener(
+                    "hidden.bs.modal",
+                    () => {
+                        window.location.reload();
+                    },
+                    { once: true }
+                );
+
+        } else {
+
+            const error = await response.json();
+
+            hideModal("editProfileModal");
+
+            document.getElementById("errorMessage").textContent =
+                getErrorMessage(error);
+
+            showModal("errorModal");
+        }
+
+    } catch (error) {
+
+        hideModal("editProfileModal");
+
+        document.getElementById("errorMessage").textContent =
+            "Network error. Please try again.";
+
+        showModal("errorModal");
+    }
+
+});
+
+
+// =========================
+// DELETE PROFILE
+// =========================
+
+const confirmDeleteProfileBtn =
+    document.getElementById("confirmDeleteProfileBtn");
+
+confirmDeleteProfileBtn.addEventListener("click", async () => {
+
+    const token = getToken();
+
+    if (!token) {
+        window.location.href = "/login";
+        return;
+    }
+
+    try {
+
+        const response = await fetch("/api/users", {
+            method: "DELETE",
+
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (response.status === 401) {
+            window.location.href = "/login";
+            return;
+        }
+
+        if (response.ok) {
+
+            hideModal("deleteProfileModal");
+
+            document.getElementById("successMessage").textContent =
+                "Account deleted successfully.";
+
+            showModal("successModal");
+
+            document
+                .getElementById("successModal")
+                .addEventListener(
+                    "hidden.bs.modal",
+                    async () => {
+
+                        await fetch("/api/auth/logout", {
+                            method: "POST",
+                        });
+
+                        window.location.href = "/login";
+                    },
+                    { once: true }
+                );
+
+        } else {
+
+            const error = await response.json();
+
+            hideModal("deleteProfileModal");
+
+            document.getElementById("errorMessage").textContent =
+                getErrorMessage(error);
+
+            showModal("errorModal");
+        }
+
+    } catch (error) {
+
+        hideModal("deleteProfileModal");
+
+        document.getElementById("errorMessage").textContent =
+            "Network error. Please try again.";
+
+        showModal("errorModal");
+    }
+
+});
+
+</script>
+
+{% endblock scripts %}

@@ -13,3 +13,6 @@ ENV/
 
 # VS Code 
 .vscode/
+
+# Database Files
+data/everything.db

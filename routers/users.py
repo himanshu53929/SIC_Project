@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 
 import models
 from database import get_db
-from schemas import UserCreate, UserPublic, UserPrivate, Token
+from schemas import UserCreate, UserPublic, UserPrivate, Token, UserUpdate
 
 from datetime import timedelta
 from fastapi.security import OAuth2PasswordRequestForm
@@ -122,6 +122,91 @@ async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No Users Found")
 
     return users
+
+# Update User
+@router.patch("", response_model=UserPrivate)
+async def update_user(
+    update_user_data: UserUpdate, 
+    current_user: CurrentUser, 
+    db: Annotated[AsyncSession, Depends(get_db)]
+    ):
+
+    result = await db.execute(
+        select(models.User)
+        .where(models.User.id == current_user.id)
+    )
+    user = result.scalars().first()
+
+    # this just means that the user has set some new username
+    if (update_user_data.username is not None 
+        and update_user_data.username.lower() != user.username.lower()): 
+        result = await db.execute(
+            select(models.User)
+            .where(func.lower(models.User.username) == update_user_data.username.lower())
+        )
+        existing_user = result.scalars().first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with given username already exists."
+            )
+        
+    if (update_user_data.email is not None
+        and update_user_data.email.lower() != user.email):
+        result = await db.execute(
+            select(models.User)
+            .where(models.User.email == update_user_data.email.lower())
+        )
+        existing_email = result.scalars().first()
+        if existing_email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with given email already exists."
+            )
+        
+    if update_user_data.username is not None:
+        user.username = update_user_data.username
+    if update_user_data.email is not None:
+        user.email = update_user_data.email
+    if update_user_data.age is not None:
+        user.age = update_user_data.age
+    if update_user_data.gender is not None:
+        user.gender = update_user_data.gender
+    if update_user_data.weight_kg is not None:
+        user.weight_kg = update_user_data.weight_kg
+    if update_user_data.height_cm is not None:
+        user.height_cm = update_user_data.height_cm
+    if update_user_data.goal is not None:
+        user.goal = update_user_data.goal
+
+    await db.commit()
+    await db.refresh(user)
+
+    return user
+
+
+
+# Delete User
+@router.delete("", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user(
+    current_user: CurrentUser,
+    db: Annotated[AsyncSession, Depends(get_db)]
+):
+    result = await db.execute(
+        select(models.User)
+        .where(models.User.id == current_user.id)
+    )
+    user = result.scalars().first()
+
+    await db.delete(user)
+    await db.commit()   
+        
+
+    
+
+
+
+
 
 
 # Logout

@@ -19,12 +19,30 @@ class UserCreate(UserBase):
 class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    id: int
     username: str
 
 
 class UserPrivate(UserPublic):
     email: EmailStr
+
+    age: int = Field(gt=1, lt=120)
+    gender: str = Field(min_length=1, max_length=50)
+    weight_kg: float = Field(gt=5, lt=150)
+    height_cm: float = Field(gt=30, lt=280)
+    goal: str = Field(min_length=1, max_length=50)
+
+
+class UserUpdate(BaseModel):
+    username: str | None = Field(default = None, min_length=1, max_length=50)
+    email: EmailStr | None = Field(default = None, max_length=120)
+
+    age: int | None = Field(default = None, gt=1, lt=120)
+    gender: str | None = Field(default = None, min_length=1, max_length=50)
+    weight_kg: float | None = Field(default = None, gt=5, lt=150)
+    height_cm: float | None = Field(default = None, gt=30, lt=280)
+    goal: str | None = Field(default = None, min_length=1, max_length=50)
+
+
 
 class Token(BaseModel):
     access_token: str

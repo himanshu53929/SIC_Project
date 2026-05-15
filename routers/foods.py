@@ -29,7 +29,10 @@ async def add_food(
 
     results = await db.execute(
         select(models.Custom_Food)
-        .where(func.lower(models.Custom_Food.food_name) == food.food_name.lower())
+        .where(
+            func.lower(models.Custom_Food.food_name) == food.food_name.lower(),
+            models.Custom_Food.user_id == current_user.id
+            )
     )
 
     custom_stored_food = results.scalars().first()
