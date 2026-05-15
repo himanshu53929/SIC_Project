@@ -1,4 +1,88 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>This is Dashboard</h1>
+<div class="page-shell">
+	<div class="page-header mb-4">
+		<div>
+			<p class="section-kicker mb-1">Dashboard</p>
+			<h1 class="page-title mb-2">Daily health snapshot for <span id="dashboardUserName">your profile</span></h1>
+			<p class="page-subtitle mb-0">Calories in vs. calories burned updates automatically as you log new food and workouts.</p>
+		</div>
+		<div class="page-status">
+			<div id="dashboardStatus" class="text-muted small">Loading latest data...</div>
+			<div class="small text-muted">Last updated: <span id="dashboardUpdatedAt">--</span></div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100 metric-blue">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-basket3 metric-icon text-primary"></i>
+					<div>
+						<p class="metric-label mb-1">Calories Intake</p>
+						<div class="metric-value" id="todayCaloriesIn">0</div>
+						<p class="metric-note mb-0">Today's total food calories.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100 metric-green">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-heart-pulse metric-icon text-success"></i>
+					<div>
+						<p class="metric-label mb-1">Calories Burned</p>
+						<div class="metric-value" id="todayCaloriesBurned">0</div>
+						<p class="metric-note mb-0">Today's exercise calories burned.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100 metric-orange">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-graph-up-arrow metric-icon text-warning"></i>
+					<div>
+						<p class="metric-label mb-1">Net Calories</p>
+						<div class="metric-value" id="todayNetCalories">0</div>
+						<p class="metric-note mb-0">Intake minus burn for today.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4">
+		<div class="col-lg-5">
+			<div class="insight-card h-100 p-3 p-md-4">
+				<div class="d-flex justify-content-between align-items-center mb-3">
+					<div>
+						<p class="section-kicker mb-1">Real-time comparison</p>
+						<h2 class="h4 mb-0">Calories in vs. calories burned</h2>
+					</div>
+				</div>
+				<canvas id="calorieComparisonChart" height="260"></canvas>
+			</div>
+		</div>
+		<div class="col-lg-7">
+			<div class="insight-card h-100 p-3 p-md-4">
+				<div class="d-flex justify-content-between align-items-center mb-3">
+					<div>
+						<p class="section-kicker mb-1">Recent trend</p>
+						<h2 class="h4 mb-0">Last 7 days activity balance</h2>
+					</div>
+				</div>
+				<canvas id="dailyTrendChart" height="260"></canvas>
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock content %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+	import { initDashboard } from "/static/js/health_insights.js";
+	initDashboard();
+</script>
+{% endblock scripts %}

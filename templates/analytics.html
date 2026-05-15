@@ -1,4 +1,84 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>This is Analytics Page</h1>
+<div class="page-shell">
+	<div class="page-header mb-4">
+		<div>
+			<p class="section-kicker mb-1">Analytics</p>
+			<h1 class="page-title mb-2">Predictive health insights for <span id="analyticsUserName">your profile</span></h1>
+			<p class="page-subtitle mb-0">Weight forecasting, clustering, and recommendations are generated from your saved logs.</p>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-person-bounding-box metric-icon text-info"></i>
+					<div>
+						<p class="metric-label mb-1">BMI</p>
+						<div class="metric-value" id="currentBmi">0</div>
+						<p class="metric-note mb-0">Calculated from your latest weight and height.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-moon-stars metric-icon text-secondary"></i>
+					<div>
+						<p class="metric-label mb-1">Average Sleep</p>
+						<div class="metric-value" id="avgSleepHours">0</div>
+						<p class="metric-note mb-0">Average sleep from your logs.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="insight-card metric-card h-100">
+				<div class="d-flex align-items-center gap-3">
+					<i class="bi bi-activity metric-icon text-warning"></i>
+					<div>
+						<p class="metric-label mb-1">Average Calorie Balance</p>
+						<div class="metric-value" id="avgCalorieBalance">0</div>
+						<p class="metric-note mb-0">Positive values mean intake is above burn.</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row g-4 mb-4">
+		<div class="col-lg-7">
+			<div class="insight-card h-100 p-3 p-md-4">
+				<p class="section-kicker mb-1">Regression model</p>
+				<h2 class="h4 mb-2">Short-term weight trend prediction</h2>
+				<p id="weightPredictionText" class="text-muted mb-3">Loading prediction...</p>
+				<canvas id="weightPredictionChart" height="280"></canvas>
+			</div>
+		</div>
+		<div class="col-lg-5">
+			<div class="insight-card h-100 p-3 p-md-4">
+				<p class="section-kicker mb-1">K-Means classification</p>
+				<h2 class="h4 mb-2">Health category</h2>
+				<div class="health-category-pill mb-3" id="healthCategoryName">Balanced</div>
+				<p id="healthCategoryDescription" class="text-muted mb-0">Loading health category...</p>
+			</div>
+		</div>
+	</div>
+
+	<div class="insight-card p-3 p-md-4">
+		<p class="section-kicker mb-1">Personalized recommendations</p>
+		<h2 class="h4 mb-3">What to focus on next</h2>
+		<ul id="recommendationsList" class="recommendation-list mb-0"></ul>
+	</div>
+</div>
 {% endblock content %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+	import { initAnalytics } from "/static/js/health_insights.js";
+	initAnalytics();
+</script>
+{% endblock scripts %}

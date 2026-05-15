@@ -1,4 +1,108 @@
 {% extends "layout.html" %}
 {% block content %}
-<h1>This is a random project for SIC in progress by Himanshu Chand.</h1>
+<div class="page-shell">
+	<div class="page-header mb-4">
+		<div>
+			<p class="section-kicker mb-1">Capstone Project</p>
+			<h1 class="page-title mb-2">Personalized Health & Fitness Dashboard</h1>
+			<p class="page-subtitle mb-0">Coding and Programming with Python — 88-Hour Course · Capstone Project Proposal</p>
+		</div>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">Team Members</h2>
+		<table class="table table-sm mt-2">
+			<thead>
+				<tr><th>Name</th><th>Roll Number</th></tr>
+			</thead>
+			<tbody>
+				<tr><td>Nishant Bhatt</td><td>081BCT047</td></tr>
+				<tr><td>Himanshu Chand</td><td>081BCT034</td></tr>
+				<tr><td>Abhinam Majgaiya</td><td>081MSNCS001</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">1. Project Overview</h2>
+		<p>The Personalized Health & Fitness Dashboard is a locally hosted web application that empowers users to track daily health habits and receive data-driven feedback. By logging food intake, exercise, and sleep, users gain a clear picture of their health through visualizations, predictive analytics, and personalized recommendations.</p>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">2. Objectives</h2>
+		<ul>
+			<li>Enable users to log daily food intake, exercise sessions, and sleep hours through an intuitive web interface.</li>
+			<li>Calculate and visualize calorie intake vs. calories burned in real time.</li>
+			<li>Predict short-term weight trends using a machine learning regression model.</li>
+			<li>Classify users into health categories using clustering (K‑Means).</li>
+			<li>Provide personalized health recommendations based on user data.</li>
+		</ul>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">3. Key Features</h2>
+		<h3 class="h6 mt-2">3.1 User Input</h3>
+		<ul>
+			<li>Daily food intake with calorie lookup from a web dataset.</li>
+			<li>Exercise type and duration with calorie-burn estimation (MET-based).</li>
+			<li>Sleep hours tracker.</li>
+		</ul>
+
+		<h3 class="h6 mt-2">3.2 Dashboard Outputs</h3>
+		<ul>
+			<li>Calorie intake vs. burn chart (interactive visualizations).</li>
+			<li>Weight trend prediction over time (linear regression).</li>
+			<li>Health cluster category (e.g., Active, Sedentary, Balanced).</li>
+			<li>Personalized recommendation panel (diet, exercise, sleep tips).</li>
+		</ul>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">4. Technology Stack</h2>
+		<table class="table table-borderless table-sm mt-2">
+			<tbody>
+				<tr><th class="w-25">Backend</th><td>FastAPI (Python)</td></tr>
+				<tr><th>Data Processing</th><td>Pandas</td></tr>
+				<tr><th>Machine Learning</th><td>Scikit‑Learn (Regression + K‑Means)</td></tr>
+				<tr><th>Database</th><td>SQLite</td></tr>
+				<tr><th>Visualization</th><td>Plotly / Chart.js</td></tr>
+				<tr><th>Frontend</th><td>Jinja2 templates, HTML/CSS, Bootstrap</td></tr>
+				<tr><th>Dataset</th><td>Web datasets for food & exercise calories (USDA FoodData Central)</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">5. System Architecture</h2>
+		<p>The application follows a three‑tier architecture: the frontend (Jinja2 + interactive charts) handles user interaction; FastAPI serves as the backend API and orchestrates data processing; SQLite stores user logs and historical data. Machine learning models trained on curated datasets are loaded at runtime to generate predictions and clusters.</p>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">6. Project Timeline</h2>
+		<table class="table table-sm mt-2">
+			<thead>
+				<tr><th>Phase</th><th>Task</th><th>Duration</th></tr>
+			</thead>
+			<tbody>
+				<tr><td>1</td><td>Dataset collection & cleaning</td><td>Week 1</td></tr>
+				<tr><td>2</td><td>ML model training (regression + clustering)</td><td>Week 2</td></tr>
+				<tr><td>3</td><td>FastAPI backend & SQLite setup</td><td>Week 2–3</td></tr>
+				<tr><td>4</td><td>Frontend (Jinja2 + interactive UI)</td><td>Week 3</td></tr>
+				<tr><td>5</td><td>Integration, testing & final demo</td><td>Week 4</td></tr>
+			</tbody>
+		</table>
+	</div>
+
+	<div class="insight-card p-4 mb-4">
+		<h2 class="h5">7. Expected Outcomes</h2>
+		<ul>
+			<li>A fully functional local web application deployable via FastAPI.</li>
+			<li>Trained ML models capable of predicting short-term weight trends and clustering users.</li>
+			<li>An interactive dashboard showcasing real-time health analytics.</li>
+			<li>Demonstrated application of Python and data science skills in the Samsung Innovation Campus curriculum.</li>
+		</ul>
+	</div>
+
+	<div class="text-muted small mt-3">Samsung Innovation Campus · Capstone Project · 2025</div>
+</div>
 {% endblock content %}

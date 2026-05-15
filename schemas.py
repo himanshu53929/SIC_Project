@@ -16,6 +16,16 @@ class UserCreate(UserBase):
     password: str = Field(min_length=8)
 
 
+class UserUpdate(BaseModel):
+    age: int | None = Field(default=None, gt=1, lt=120)
+    gender: str | None = Field(default=None, min_length=1, max_length=50)
+    weight_kg: float | None = Field(default=None, gt=5, lt=200)
+    height_cm: float | None = Field(default=None, gt=30, lt=280)
+    goal: str | None = Field(default=None, min_length=1, max_length=50)
+    username: str | None = Field(default=None, min_length=1, max_length=50)
+    email: EmailStr | None = Field(default=None, max_length=120)
+
+
 class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -23,7 +33,14 @@ class UserPublic(BaseModel):
 
 
 class UserPrivate(UserPublic):
+    model_config = ConfigDict(from_attributes=True)
+
     email: EmailStr
+    age: int
+    gender: str
+    weight_kg: float | None = None
+    height_cm: float | None = None
+    goal: str | None = None
 
     age: int = Field(gt=1, lt=120)
     gender: str = Field(min_length=1, max_length=50)
@@ -51,13 +68,13 @@ class Token(BaseModel):
 
 # Food Schemas
 class FoodBase(BaseModel):
-    food_name: str = Field(min_length=1, max_length=50)
+    food_name: str = Field(min_length=1, max_length=255)
     quantity_g: float
     date: d
     
 
 class FoodCreate(FoodBase):
-    pass
+    fdc_id: int | None = None
 
 
 class FoodResponse(FoodBase):
