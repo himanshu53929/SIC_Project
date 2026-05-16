@@ -10,6 +10,7 @@ from database import get_db
 from schemas import ExerciseCreate, ExerciseResponse, ExerciseUpdate
 
 from auth import CurrentUser
+from validation import date_validation
 
 router = APIRouter()
 
@@ -17,6 +18,8 @@ router = APIRouter()
 @router.post("/exercise_logs", response_model=ExerciseResponse, status_code=status.HTTP_201_CREATED)
 async def add_exercise(current_user: CurrentUser, exercise: ExerciseCreate, db: Annotated[AsyncSession, Depends(get_db)]):
     
+    date_validation(exercise.date)
+
     results = await db.execute(
         select(models.Stored_Exercise)
         .where(func.lower(models.Stored_Exercise.exercise_name) == exercise.exercise_name.lower())
@@ -52,6 +55,10 @@ async def get_exercises_user(current_user: CurrentUser, db: Annotated[AsyncSessi
     results = await db.execute(
         select(models.Exercise)
         .where(models.Exercise.user_id == current_user.id)
+        .order_by(
+            models.Exercise.date.desc(),
+            models.Exercise.id.desc()
+        )
         )
     exercises = results.scalars().all()
 

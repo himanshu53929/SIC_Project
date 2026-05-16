@@ -110,6 +110,7 @@ async def exercise(request: Request, cookie_user: CookieUser, db: Annotated[Asyn
             models.Exercise.user_id == cookie_user.id
             ,models.Exercise.date == date.today()
         )
+        .order_by(models.Exercise.id.desc())
     )
     exercises = results.scalars().all()
 
@@ -131,7 +132,9 @@ async def sleep(request: Request, cookie_user: CookieUser, db: Annotated[AsyncSe
         .where(
             models.Sleep.user_id == cookie_user.id,
             models.Sleep.date == date.today()
-            ))
+            )
+        .order_by(models.Sleep.id.desc())    
+        )
     sleeps = results.scalars().all()
 
     return templates.TemplateResponse(
@@ -153,7 +156,11 @@ async def food_templates(request: Request, cookie_user: CookieUser, db: Annotate
             models.Food.user_id == cookie_user.id,
             models.Food.date == date.today()
             )
+        .order_by(
+            models.Food.id.desc()
+            )
         )
+
     foods = results.scalars().all()
 
     return templates.TemplateResponse(
@@ -173,6 +180,10 @@ async def weight(request: Request, cookie_user: CookieUser, db: Annotated[AsyncS
         select(models.Weight)
         .where(
             models.Weight.user_id == cookie_user.id
+            )
+        .order_by(
+            models.Weight.date.desc(),
+            models.Weight.id.desc()
             )
         )
     weights = results.scalars().all()

@@ -10,12 +10,15 @@ from database import get_db
 from schemas import SleepCreate, SleepResponse
 
 from auth import CurrentUser
+from validation import date_validation
 
 router = APIRouter()
 
 # add sleep
 @router.post("/sleep_logs", response_model=SleepResponse, status_code=status.HTTP_201_CREATED)
 async def add_sleep(current_user: CurrentUser, sleep: SleepCreate, db: Annotated[AsyncSession, Depends(get_db)]):
+
+    date_validation(sleep.date)
 
     new_sleep = models.Sleep(
         hours = sleep.hours,
@@ -37,7 +40,12 @@ async def get_sleeps_user(current_user: CurrentUser, db: Annotated[AsyncSession,
 
     results = await db.execute(
         select(models.Sleep)
-        .where(models.Sleep.user_id == current_user.id))
+        .where(models.Sleep.user_id == current_user.id)
+        .order_by(
+            models.Sleep.date.desc(),
+            models.Sleep.id.desc()
+        )
+        )
     
     sleeps = results.scalars().all()
 

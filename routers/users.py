@@ -122,30 +122,6 @@ async def get_current_user(current_user: CurrentUser):
     }
 
 
-@router.put("/me", response_model=UserPrivate)
-async def update_current_user(
-    payload: UserUpdate,
-    current_user: CurrentUser,
-    db: Annotated[AsyncSession, Depends(get_db)],
-):
-    # Load user from DB
-    user = await db.get(models.User, current_user.id)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-    # Update allowed fields when provided
-    updatable = ["age", "gender", "weight_kg", "height_cm", "goal", "username", "email"]
-    for field in updatable:
-        if getattr(payload, field, None) is not None:
-            setattr(user, field, getattr(payload, field))
-
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-
-    return user
-
-
 # View Users
 @router.get("", response_model=list[UserPublic])
 async def get_users(db: Annotated[AsyncSession, Depends(get_db)]):

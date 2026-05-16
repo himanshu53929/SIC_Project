@@ -13,6 +13,7 @@ from schemas import FoodCreate, FoodResponse, FoodUpdate
 
 from config import settings
 from auth import CurrentUser
+from validation import date_validation
 
 router = APIRouter()
 
@@ -134,6 +135,8 @@ async def add_food(
     food: FoodCreate, 
     db: Annotated[AsyncSession, Depends(get_db)]
     ):
+    date_validation(food.date)
+
     results = await db.execute(
         select(models.Stored_Food)
         .where(func.lower(models.Stored_Food.food_name) == food.food_name.lower())
@@ -197,7 +200,14 @@ async def add_food(
 # Show added foods of a user
 @router.get("/food_logs", response_model=list[FoodResponse])
 async def get_foods_user(current_user: CurrentUser, db: Annotated[AsyncSession, Depends(get_db)]):
-    results = await db.execute(select(models.Food).where(models.Food.user_id == current_user.id))
+    results = await db.execute(
+        select(models.Food)
+        .where(models.Food.user_id == current_user.id)
+        .order_by(
+            models.Food.date.desc(),
+            models.Food.id.desc()
+        )
+        )
     foods = results.scalars().all()
 
     if foods:
