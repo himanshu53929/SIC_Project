@@ -1,108 +1,390 @@
-{% extends "layout.html" %}
-{% block content %}
+{% extends "layout.html" %} {% block css %}
+<style>
+  /* ===== Global Page Styling =====
+*/
+  body {
+    background: linear-gradient(135deg, #0f172a, #111827, #1e293b);
+    min-height: 100vh;
+    font-family: "Inter", sans-serif;
+    color: #f8fafc;
+  } /* =====
+Main Wrapper ===== */
+  .page-shell {
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px 20px 80px;
+  } /* ===== Header ===== */
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  } /* ===== Cards ===== */
+  .insight-card {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 24px;
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    transition:
+      transform 0.35s ease,
+      box-shadow 0.35s ease,
+      border 0.35s ease;
+  } /* Glow Border Effect */
+  .insight-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(56, 189, 248, 0.25),
+      rgba(129, 140, 248, 0.18),
+      rgba(192, 132, 252, 0.22)
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
+  .insight-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(255, 255, 255, 0.2);
+    box-shadow:
+      0 18px 45px rgba(0, 0, 0, 0.45),
+      0 0 25px rgba(99, 102, 241, 0.25);
+  }
+  .insight-card:hover::before {
+    opacity: 1;
+  } /* ===== Typography ===== */
+  .insight-card h2 {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: #f8fafc;
+    margin-bottom: 16px;
+  }
+  .insight-card h3 {
+    color: #cbd5e1;
+    font-weight: 600;
+  }
+  .insight-card p,
+  .insight-card li,
+  .insight-card td,
+  .insight-card th {
+    color: #e2e8f0;
+    line-height: 1.8;
+    font-size: 1rem;
+  } /* ===== Lists ===== */
+  .insight-card ul {
+    padding-left: 1.4rem;
+  }
+  .insight-card li {
+    margin-bottom: 10px;
+  } /* ===== Table ===== */
+  .table {
+    color: #f1f5f9;
+  }
+  .table th {
+    color: #93c5fd;
+    font-weight: 700;
+  }
+  .table td {
+    color: plum;
+  } /* ===== Section
+Spacing ===== */
+  .mb-4 {
+    margin-bottom: 28px !important;
+  } /* ===== Scrollbar
+===== */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f172a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(#38bdf8, #8b5cf6);
+    border-radius: 10px;
+  } /* ===== Responsive
+===== */
+  @media (max-width: 768px) {
+    .page-title {
+      font-size: 2rem;
+    }
+    .insight-card {
+      padding: 1.4rem !important;
+    }
+    .insight-card p,
+    .insight-card li {
+      font-size: 0.95rem;
+    }
+  }
+
+  /* ===== THANK YOU SIC SECTION ===== */
+
+  .thankyou-section {
+    display: flex;
+    justify-content: center;
+    margin-top: 60px;
+  }
+
+  .thankyou-card {
+    position: relative;
+    overflow: hidden;
+
+    width: 100%;
+    max-width: 850px;
+
+    padding: 50px 30px;
+    text-align: center;
+
+    border-radius: 30px;
+
+    background: linear-gradient(
+      135deg,
+      rgba(56, 189, 248, 0.15),
+      rgba(139, 92, 246, 0.18),
+      rgba(236, 72, 153, 0.15)
+    );
+
+    border: 1px solid rgba(255, 255, 255, 0.15);
+
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.4),
+      0 0 40px rgba(99, 102, 241, 0.25);
+
+    animation: floatCard 4s ease-in-out infinite;
+  }
+
+  /* Animated Glow */
+  .thankyou-card::before {
+    content: "";
+    position: absolute;
+    inset: -100px;
+
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.15),
+      transparent 70%
+    );
+
+    animation: rotateGlow 8s linear infinite;
+  }
+
+  /* Heading */
+  .thankyou-card h2 {
+    position: relative;
+    z-index: 2;
+
+    font-size: 3rem;
+    font-weight: 900;
+
+    background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc, #f472b6);
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
+
+    margin-bottom: 18px;
+    letter-spacing: -1px;
+  }
+
+  /* Text */
+  .thankyou-card p {
+    position: relative;
+    z-index: 2;
+
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+
+    max-width: 650px;
+    margin: auto;
+  }
+
+  /* Floating animation */
+  @keyframes floatCard {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-8px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  /* Rotating light effect */
+  @keyframes rotateGlow {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .thankyou-card {
+      padding: 40px 20px;
+    }
+
+    .thankyou-card h2 {
+      font-size: 2rem;
+    }
+
+    .thankyou-card p {
+      font-size: 1rem;
+    }
+  }
+</style>
+{% endblock css %} {% block content %}
 <div class="page-shell">
-	<div class="page-header mb-4">
-		<div>
-			<p class="section-kicker mb-1">Capstone Project</p>
-			<h1 class="page-title mb-2">Personalized Health & Fitness Dashboard</h1>
-			<p class="page-subtitle mb-0">Coding and Programming with Python — 88-Hour Course · Capstone Project Proposal</p>
-		</div>
-	</div>
+  <div class="page-header mb-4">
+    <div>
+      <h1 class="page-title mb-2">Personalized Health & Fitness Dashboard</h1>
+    </div>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">Team Members</h2>
-		<table class="table table-sm mt-2">
-			<thead>
-				<tr><th>Name</th><th>Roll Number</th></tr>
-			</thead>
-			<tbody>
-				<tr><td>Nishant Bhatt</td><td>081BCT047</td></tr>
-				<tr><td>Himanshu Chand</td><td>081BCT034</td></tr>
-				<tr><td>Abhinam Majgaiya</td><td>081MSNCS001</td></tr>
-			</tbody>
-		</table>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">Built By:</h2>
+    <ul>
+      <li>Nishant Bhatta</li>
+      <li>Abhinam Majgaiya</li>
+      <li>Himanshu Chand</li>
+    </ul>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">1. Project Overview</h2>
-		<p>The Personalized Health & Fitness Dashboard is a locally hosted web application that empowers users to track daily health habits and receive data-driven feedback. By logging food intake, exercise, and sleep, users gain a clear picture of their health through visualizations, predictive analytics, and personalized recommendations.</p>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">Who are we?</h2>
+    <p>We are students of Pulchowk Campus.</p>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">2. Objectives</h2>
-		<ul>
-			<li>Enable users to log daily food intake, exercise sessions, and sleep hours through an intuitive web interface.</li>
-			<li>Calculate and visualize calorie intake vs. calories burned in real time.</li>
-			<li>Predict short-term weight trends using a machine learning regression model.</li>
-			<li>Classify users into health categories using clustering (K‑Means).</li>
-			<li>Provide personalized health recommendations based on user data.</li>
-		</ul>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">What have we build?</h2>
+    <p>
+      We present you, Personalized Health & Fitness Dashboard, which is a
+      locally hosted web application that empowers users to track daily health
+      habits and receive data-driven feedback. By logging food intake, exercise,
+      and sleep, users gain a clear picture of their health through
+      visualizations, predictive analytics, and personalized recommendations.
+    </p>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">3. Key Features</h2>
-		<h3 class="h6 mt-2">3.1 User Input</h3>
-		<ul>
-			<li>Daily food intake with calorie lookup from a web dataset.</li>
-			<li>Exercise type and duration with calorie-burn estimation (MET-based).</li>
-			<li>Sleep hours tracker.</li>
-		</ul>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">What you get here?</h2>
+    <ul>
+      <li>
+        You can track your daily food intake, exercise sessions, and sleep hours
+        through an intuitive web interface.
+      </li>
+      <li>
+        You can view your calorie intake vs. calories burned in real time with
+        good visuals.
+      </li>
+      <li>
+        Your short-term weight trends will be predicted using a machine learning
+        regression model.
+      </li>
+      <li>You can view which category you fall into on the basis of _____.</li>
+      <li>You will get personalized health recommendations.</li>
+    </ul>
+  </div>
 
-		<h3 class="h6 mt-2">3.2 Dashboard Outputs</h3>
-		<ul>
-			<li>Calorie intake vs. burn chart (interactive visualizations).</li>
-			<li>Weight trend prediction over time (linear regression).</li>
-			<li>Health cluster category (e.g., Active, Sedentary, Balanced).</li>
-			<li>Personalized recommendation panel (diet, exercise, sleep tips).</li>
-		</ul>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">Key Features</h2>
+    <h3 class="h6 mt-2">What you need to log?</h3>
+    <ul>
+      <li>Your daily food intake.</li>
+      <li>Your exercise type and duration.</li>
+      <li>Your sleep sessions.</li>
+    </ul>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">4. Technology Stack</h2>
-		<table class="table table-borderless table-sm mt-2">
-			<tbody>
-				<tr><th class="w-25">Backend</th><td>FastAPI (Python)</td></tr>
-				<tr><th>Data Processing</th><td>Pandas</td></tr>
-				<tr><th>Machine Learning</th><td>Scikit‑Learn (Regression + K‑Means)</td></tr>
-				<tr><th>Database</th><td>SQLite</td></tr>
-				<tr><th>Visualization</th><td>Plotly / Chart.js</td></tr>
-				<tr><th>Frontend</th><td>Jinja2 templates, HTML/CSS, Bootstrap</td></tr>
-				<tr><th>Dataset</th><td>Web datasets for food & exercise calories (USDA FoodData Central)</td></tr>
-			</tbody>
-		</table>
-	</div>
+    <h3 class="h6 mt-2">What we will deliver?</h3>
+    <ul>
+      <li>Live calorie intake vs. burn chart (interactive visualizations).</li>
+      <li>Weight trend prediction over time (linear regression).</li>
+      <li>Health cluster category (e.g., Active, Sedentary, Balanced).</li>
+      <li>Personalized recommendation panel (diet, exercise, sleep tips).</li>
+    </ul>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">5. System Architecture</h2>
-		<p>The application follows a three‑tier architecture: the frontend (Jinja2 + interactive charts) handles user interaction; FastAPI serves as the backend API and orchestrates data processing; SQLite stores user logs and historical data. Machine learning models trained on curated datasets are loaded at runtime to generate predictions and clusters.</p>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">Hey developers! Want to know what we used?</h2>
+    <table class="table table-borderless table-sm mt-2">
+      <tbody>
+        <tr>
+          <th class="w-25">Backend</th>
+          <td>FastAPI (Python)</td>
+        </tr>
+        <tr>
+          <th>Data Processing</th>
+          <td>Pandas</td>
+        </tr>
+        <tr>
+          <th>Machine Learning</th>
+          <td>Scikit‑Learn (Regression + K‑Means)</td>
+        </tr>
+        <tr>
+          <th>Database</th>
+          <td>SQLite</td>
+        </tr>
+        <tr>
+          <th>Visualization</th>
+          <td>Plotly / Chart.js</td>
+        </tr>
+        <tr>
+          <th>Frontend</th>
+          <td>Jinja2 templates, HTML/CSS, Bootstrap</td>
+        </tr>
+        <tr>
+          <th>Dataset</th>
+          <td>
+            Web datasets for food & exercise calories (USDA FoodData Central)
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">6. Project Timeline</h2>
-		<table class="table table-sm mt-2">
-			<thead>
-				<tr><th>Phase</th><th>Task</th><th>Duration</th></tr>
-			</thead>
-			<tbody>
-				<tr><td>1</td><td>Dataset collection & cleaning</td><td>Week 1</td></tr>
-				<tr><td>2</td><td>ML model training (regression + clustering)</td><td>Week 2</td></tr>
-				<tr><td>3</td><td>FastAPI backend & SQLite setup</td><td>Week 2–3</td></tr>
-				<tr><td>4</td><td>Frontend (Jinja2 + interactive UI)</td><td>Week 3</td></tr>
-				<tr><td>5</td><td>Integration, testing & final demo</td><td>Week 4</td></tr>
-			</tbody>
-		</table>
-	</div>
+  <div class="insight-card p-4 mb-4">
+    <h2 class="h5">So, what is our System Architecture?</h2>
+    <p>
+      The application follows a three‑tier architecture: the frontend (Jinja2 +
+      interactive charts) handles user interaction; FastAPI serves as the
+      backend API and orchestrates data processing; SQLite stores user logs and
+      historical data. Machine learning models trained on curated datasets are
+      loaded at runtime to generate predictions and clusters.
+    </p>
+  </div>
 
-	<div class="insight-card p-4 mb-4">
-		<h2 class="h5">7. Expected Outcomes</h2>
-		<ul>
-			<li>A fully functional local web application deployable via FastAPI.</li>
-			<li>Trained ML models capable of predicting short-term weight trends and clustering users.</li>
-			<li>An interactive dashboard showcasing real-time health analytics.</li>
-			<li>Demonstrated application of Python and data science skills in the Samsung Innovation Campus curriculum.</li>
-		</ul>
-	</div>
-
-	<div class="text-muted small mt-3">Samsung Innovation Campus · Capstone Project · 2025</div>
+  <div class="thankyou-section mt-5">
+    <div class="thankyou-card">
+      <h2>Thank You SIC!!!</h2>
+      <p>
+        For providing us the opportunity, guidance, and platform to build and
+        showcase our project.
+      </p>
+    </div>
+  </div>
+  {% endblock content %}
 </div>
-{% endblock content %}
