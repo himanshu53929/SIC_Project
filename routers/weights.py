@@ -75,7 +75,10 @@ async def get_weights_user(current_user: CurrentUser, db: Annotated[AsyncSession
     results = await db.execute(
         select(models.Weight)
         .where(models.Weight.user_id == current_user.id)
-        .order_by(models.Weight.date.desc())
+        .order_by(
+            models.Weight.date.desc(),
+            models.Weight.id.desc()
+            )
         )
     weights = results.scalars().all()
 

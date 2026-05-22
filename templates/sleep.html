@@ -214,8 +214,9 @@
 
           <select class="form-control" name="quality" required>
             <option value="">Select Quality</option>
+            <option value="Good">Excellent</option>
             <option value="Good">Good</option>
-            <option value="Average">Average</option>
+            <option value="Average">Fair</option>
             <option value="Poor">Poor</option>
           </select>
           <div class="mb-3">
@@ -363,7 +364,7 @@
         },
       });
 
-      if (res.status === 401){
+      if (res.status === 401) {
         window.location.href = "/login";
         return;
       }

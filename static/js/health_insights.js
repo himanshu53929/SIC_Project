@@ -342,7 +342,7 @@ export async function initAnalytics() {
   ]);
 
   const dailySeries = buildDailySeries(foodLogs, exerciseLogs, sleepLogs, weightLogs);
-  const currentWeight = weightLogs.length ? Number(weightLogs[weightLogs.length - 1].weight_kg) : Number(currentUser.weight_kg || 0);
+  const currentWeight = Number(currentUser.weight_kg);
   const currentHeightMeters = Number(currentUser.height_cm || 0) / 100;
   const bmi = currentHeightMeters > 0 ? currentWeight / (currentHeightMeters ** 2) : 0;
 
